@@ -2,6 +2,7 @@ package com.ourworld.app.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ourworld.app.data.model.Avatar
 import com.ourworld.app.data.model.User
@@ -47,7 +48,7 @@ class AuthRepository @Inject constructor(
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val uid = result.user?.uid ?: throw Exception("Login failed")
             val doc = firestore.collection("users").document(uid).get().await()
-            val user = doc.toObject(User::class.java) ?: throw Exception("User data not found")
+            val user = doc.toUser() ?: throw Exception("User data not found")
             // Update last online
             firestore.collection("users").document(uid)
                 .update("lastOnline", System.currentTimeMillis()).await()
@@ -74,7 +75,7 @@ class AuthRepository @Inject constructor(
                     trySend(null)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObject(User::class.java))
+                trySend(snapshot?.toUser())
             }
         awaitClose { listener.remove() }
     }
@@ -82,10 +83,16 @@ class AuthRepository @Inject constructor(
     suspend fun getUserById(userId: String): User? {
         return try {
             firestore.collection("users").document(userId).get().await()
-                .toObject(User::class.java)
+                .toUser()
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun DocumentSnapshot.toUser(): User? {
+        val user = toObject(User::class.java) ?: return null
+        val pairedFlag = (getBoolean("isPaired") == true) || (getBoolean("paired") == true) || user.isPaired
+        return user.copy(isPaired = pairedFlag)
     }
 
     private fun generatePairingCode(): String {
