@@ -148,6 +148,7 @@ fun OurWorldNavGraph(
                 onWaterPlant = { gardenViewModel.waterPlant(coupleId, it) },
                 onRemovePlant = { gardenViewModel.removePlant(coupleId, it) },
                 onMovePlant = { id, x, y -> gardenViewModel.movePlant(coupleId, id, x, y) },
+                onHarvestPlant = { plant -> gardenViewModel.harvestPlant(coupleId, plant, userId) },
                 onTogglePlanting = { gardenViewModel.togglePlanting() }
             )
         }

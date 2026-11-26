@@ -1,5 +1,6 @@
 package com.ourworld.app.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ourworld.app.data.model.GrowthStage
 import com.ourworld.app.data.model.Plant
@@ -54,9 +55,9 @@ class GardenRepository @Inject constructor(
             .collection("plants").document(plantId)
         val doc = plantRef.get().await()
         val plant = doc.toObject(Plant::class.java) ?: return
-        // Each watering adds 90 minutes of growth boost toward the 24h bloom cycle
+        // Each watering adds 90 minutes of growth boost toward the plant's bloom time
         val newBoost = (plant.growthBoostMillis + 90L * 60L * 1000L)
-            .coerceAtMost(Plant.FULL_GROWTH_MILLIS)
+            .coerceAtMost(plant.fullGrowthMillis())
         val updatedPlant = plant.copy(
             waterLevel = minOf(100, plant.waterLevel + 30),
             lastWatered = System.currentTimeMillis(),
@@ -65,6 +66,22 @@ class GardenRepository @Inject constructor(
         )
         val newStage = updatedPlant.computedStage()
         plantRef.set(updatedPlant.copy(stage = newStage)).await()
+    }
+
+    suspend fun harvestPlant(coupleId: String, plant: Plant, userId: String) {
+        val batch = firestore.batch()
+        batch.delete(
+            firestore.collection("couples").document(coupleId)
+                .collection("plants").document(plant.id)
+        )
+        batch.update(
+            firestore.collection("users").document(userId),
+            mapOf(
+                "coins" to FieldValue.increment(plant.type.harvestCoins.toLong()),
+                "xp" to FieldValue.increment(plant.type.harvestXp.toLong())
+            )
+        )
+        batch.commit().await()
     }
 
     suspend fun updatePlantPosition(coupleId: String, plantId: String, x: Float, y: Float) {

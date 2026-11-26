@@ -66,6 +66,12 @@ class GardenViewModel @Inject constructor(
         }
     }
 
+    fun harvestPlant(coupleId: String, plant: Plant, userId: String) {
+        viewModelScope.launch {
+            gardenRepository.harvestPlant(coupleId, plant, userId)
+        }
+    }
+
     fun togglePlanting() {
         _uiState.value = _uiState.value.copy(isPlanting = !_uiState.value.isPlanting)
     }

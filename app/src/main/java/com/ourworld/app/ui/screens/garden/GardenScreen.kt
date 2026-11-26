@@ -52,6 +52,7 @@ fun GardenScreen(
     onWaterPlant: (String) -> Unit,
     onRemovePlant: (String) -> Unit,
     onMovePlant: (String, Float, Float) -> Unit,
+    onHarvestPlant: (Plant) -> Unit,
     onTogglePlanting: () -> Unit
 ) {
     val seasonColors = when (uiState.currentSeason) {
@@ -112,7 +113,7 @@ fun GardenScreen(
                         color = OurWorldDarkBrown
                     )
                     Text(
-                        "${uiState.currentSeason.emoji} ${uiState.currentSeason.label} • ${uiState.plants.size} plants • 24h bloom cycle",
+                        "${uiState.currentSeason.emoji} ${uiState.currentSeason.label} • ${uiState.plants.size} plants",
                         fontSize = 12.sp,
                         color = OurWorldWarmBrown
                     )
@@ -270,33 +271,53 @@ fun GardenScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Interactive Care Buttons
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
+                            // Interactive Care / Harvest Buttons
+                            if (stage == GrowthStage.FULLY_GROWN) {
                                 Button(
                                     onClick = {
-                                        onWaterPlant(plant.id)
-                                        nowMs = System.currentTimeMillis()
-                                        actionToast = "💧 Watered ${plant.name}! (+1.5h growth)"
-                                    },
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(14.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = OurWorldSky)
-                                ) {
-                                    Text("💧 Water", color = OurWorldDarkBrown, fontWeight = FontWeight.SemiBold)
-                                }
-                                Button(
-                                    onClick = {
+                                        onHarvestPlant(plant)
+                                        selectedPlantId = null
                                         showSparkles = true
-                                        actionToast = "☀️ Sent sunshine & love to ${plant.name}!"
+                                        actionToast = "🌾 Harvested ${plant.name}! +${plant.type.harvestCoins} 🪙 +${plant.type.harvestXp} XP"
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(14.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = OurWorldPeach)
+                                    colors = ButtonDefaults.buttonColors(containerColor = OurWorldGold)
                                 ) {
-                                    Text("☀️ Sunshine", color = OurWorldDarkBrown, fontWeight = FontWeight.SemiBold)
+                                    Text(
+                                        "🌾 Harvest (+${plant.type.harvestCoins} 🪙, +${plant.type.harvestXp} XP)",
+                                        color = OurWorldDarkBrown,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            onWaterPlant(plant.id)
+                                            nowMs = System.currentTimeMillis()
+                                            actionToast = "💧 Watered ${plant.name}! (+1.5h growth)"
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = OurWorldSky)
+                                    ) {
+                                        Text("💧 Water", color = OurWorldDarkBrown, fontWeight = FontWeight.SemiBold)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            showSparkles = true
+                                            actionToast = "☀️ Sent sunshine & love to ${plant.name}!"
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = OurWorldPeach)
+                                    ) {
+                                        Text("☀️ Sunshine", color = OurWorldDarkBrown, fontWeight = FontWeight.SemiBold)
+                                    }
                                 }
                             }
                         }
@@ -309,7 +330,7 @@ fun GardenScreen(
                 PlantingPanel(
                     onPlant = { type ->
                         onPlantSeed(type)
-                        actionToast = "🫘 Planted ${type.label}! Blooms in 24h"
+                        actionToast = "🫘 Planted ${type.label}! Blooms in ${type.growHours}h"
                     },
                     isLoading = uiState.isLoading
                 )
@@ -575,7 +596,7 @@ private fun PlantOnGarden(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        "${plant.name} ${(progress * 100).toInt()}%",
+                        if (stage == GrowthStage.FULLY_GROWN) "${plant.name} 🌾" else "${plant.name} ${(progress * 100).toInt()}%",
                         fontSize = 10.sp,
                         color = OurWorldDarkBrown,
                         fontWeight = FontWeight.SemiBold
@@ -609,7 +630,7 @@ private fun PlantingPanel(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Choose a Seed 🌱 (Blooms in 1 day)",
+                "Choose a Seed 🌱",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = OurWorldDarkBrown
@@ -619,7 +640,7 @@ private fun PlantingPanel(
                 items(PlantType.entries.toList()) { plantType ->
                     EmojiButton(
                         emoji = plantType.emoji,
-                        label = plantType.label,
+                        label = "${plantType.label} (${plantType.growHours}h)",
                         onClick = { if (!isLoading) onPlant(plantType) }
                     )
                 }
