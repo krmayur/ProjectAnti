@@ -23,7 +23,8 @@ data class FurnitureItem(
     val requiredLevel: Int = 1,
     val cost: Int = 0,
     val emoji: String = "🪑",
-    val placedBy: String = ""
+    val placedBy: String = "",
+    val addedAt: Long = System.currentTimeMillis()
 )
 
 enum class FurnitureCategory(val label: String, val emoji: String) {

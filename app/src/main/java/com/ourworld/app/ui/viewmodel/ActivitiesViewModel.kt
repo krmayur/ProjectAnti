@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -50,29 +52,41 @@ class ActivitiesViewModel @Inject constructor(
         rebuildChallenges()
     }
 
+    private fun startOfTodayMillis(): Long {
+        return LocalDate.now()
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
+
     fun loadChallenges(coupleId: String, userId: String) {
         if (coupleId.isEmpty()) return
         currentUserId = userId
         val coupleRef = firestore.collection("couples").document(coupleId)
 
         coupleRef.collection("plants").addSnapshotListener { snap, _ ->
-            plantCount = snap?.size() ?: 0
+            val todayStart = startOfTodayMillis()
+            plantCount = snap?.documents?.count { (it.getLong("plantedAt") ?: 0L) >= todayStart } ?: 0
             rebuildChallenges()
         }
         coupleRef.collection("furniture").addSnapshotListener { snap, _ ->
-            furnitureCount = snap?.size() ?: 0
+            val todayStart = startOfTodayMillis()
+            furnitureCount = snap?.documents?.count { (it.getLong("addedAt") ?: 0L) >= todayStart } ?: 0
             rebuildChallenges()
         }
         coupleRef.collection("gifts").addSnapshotListener { snap, _ ->
-            giftCount = snap?.size() ?: 0
+            val todayStart = startOfTodayMillis()
+            giftCount = snap?.documents?.count { (it.getLong("sentAt") ?: 0L) >= todayStart } ?: 0
             rebuildChallenges()
         }
         coupleRef.collection("notes").addSnapshotListener { snap, _ ->
-            noteCount = snap?.size() ?: 0
+            val todayStart = startOfTodayMillis()
+            noteCount = snap?.documents?.count { (it.getLong("sentAt") ?: 0L) >= todayStart } ?: 0
             rebuildChallenges()
         }
         coupleRef.collection("memories").addSnapshotListener { snap, _ ->
-            memoryCount = snap?.size() ?: 0
+            val todayStart = startOfTodayMillis()
+            memoryCount = snap?.documents?.count { (it.getLong("date") ?: 0L) >= todayStart } ?: 0
             rebuildChallenges()
         }
         coupleRef.collection("claimedChallenges").addSnapshotListener { snap, _ ->
@@ -152,47 +166,47 @@ class ActivitiesViewModel @Inject constructor(
 
         val milestones = listOf(
             CoupleChallenge(
-                id = "c1",
+                id = "milestone_${dateKey}_c1_$currentUserId",
                 title = "Green Thumbs",
-                description = "Plant 3 seeds in your garden ($plantCount/3)",
+                description = "Plant 3 seeds in your garden today ($plantCount/3)",
                 difficulty = 1,
                 xpReward = 50,
                 coinReward = 25,
                 progress = (plantCount / 3f).coerceIn(0f, 1f),
-                isCompleted = "c1" in claimedIds,
+                isCompleted = "milestone_${dateKey}_c1_$currentUserId" in claimedIds,
                 emoji = "🌿"
             ),
             CoupleChallenge(
-                id = "c2",
+                id = "milestone_${dateKey}_c2_$currentUserId",
                 title = "Home Sweet Home",
-                description = "Decorate with 6 furniture items ($furnitureCount/6)",
+                description = "Add 3 furniture items today ($furnitureCount/3)",
                 difficulty = 2,
                 xpReward = 75,
                 coinReward = 40,
-                progress = (furnitureCount / 6f).coerceIn(0f, 1f),
-                isCompleted = "c2" in claimedIds,
+                progress = (furnitureCount / 3f).coerceIn(0f, 1f),
+                isCompleted = "milestone_${dateKey}_c2_$currentUserId" in claimedIds,
                 emoji = "🏡"
             ),
             CoupleChallenge(
-                id = "c3",
+                id = "milestone_${dateKey}_c3_$currentUserId",
                 title = "Gift Exchange",
-                description = "Send 3 gifts to each other ($giftCount/3)",
+                description = "Send 3 gifts today ($giftCount/3)",
                 difficulty = 2,
                 xpReward = 60,
                 coinReward = 30,
                 progress = (giftCount / 3f).coerceIn(0f, 1f),
-                isCompleted = "c3" in claimedIds,
+                isCompleted = "milestone_${dateKey}_c3_$currentUserId" in claimedIds,
                 emoji = "🎁"
             ),
             CoupleChallenge(
-                id = "c4",
+                id = "milestone_${dateKey}_c4_$currentUserId",
                 title = "Memory Lane",
-                description = "Create 5 memories together ($memoryCount/5)",
+                description = "Create 3 memories today ($memoryCount/3)",
                 difficulty = 3,
                 xpReward = 100,
                 coinReward = 50,
-                progress = (memoryCount / 5f).coerceIn(0f, 1f),
-                isCompleted = "c4" in claimedIds,
+                progress = (memoryCount / 3f).coerceIn(0f, 1f),
+                isCompleted = "milestone_${dateKey}_c4_$currentUserId" in claimedIds,
                 emoji = "💕"
             )
         )
