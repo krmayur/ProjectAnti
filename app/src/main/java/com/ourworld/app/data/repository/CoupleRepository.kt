@@ -61,6 +61,26 @@ class CoupleRepository @Inject constructor(
         }
     }
 
+    suspend fun unpair(currentUid: String, partnerId: String): Result<Unit> {
+        return try {
+            val resetData = mapOf(
+                "coupleId" to "",
+                "isPaired" to false,
+                "paired" to false,
+                "partnerId" to ""
+            )
+            val batch = firestore.batch()
+            batch.update(firestore.collection("users").document(currentUid), resetData)
+            if (partnerId.isNotEmpty()) {
+                batch.update(firestore.collection("users").document(partnerId), resetData)
+            }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun observeHome(coupleId: String): Flow<Home?> = callbackFlow {
         val listener = firestore.collection("couples").document(coupleId)
             .addSnapshotListener { snapshot, error ->

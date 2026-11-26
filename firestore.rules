@@ -18,6 +18,15 @@ service cloud.firestore {
           resource.data.get('paired', false) != true &&
           request.resource.data.partnerId == request.auth.uid &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'isPaired', 'paired', 'partnerId'])
+        ) ||
+        // Paired partner can unpair
+        (
+          resource.data.partnerId == request.auth.uid &&
+          request.resource.data.isPaired == false &&
+          request.resource.data.paired == false &&
+          request.resource.data.coupleId == "" &&
+          request.resource.data.partnerId == "" &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'isPaired', 'paired', 'partnerId'])
         )
       );
 

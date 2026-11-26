@@ -98,7 +98,9 @@ fun OurWorldNavGraph(
                 onRemoveFurniture = { homeViewModel.removeFurniture(coupleId, it) },
                 onPlayAnimation = { homeViewModel.playAnimation(userId, it) },
                 onToggleCustomize = { homeViewModel.toggleCustomizing() },
-                onNavigateToAvatar = { navController.navigate(Screen.AvatarCustomize.route) }
+                onNavigateToAvatar = { navController.navigate(Screen.AvatarCustomize.route) },
+                onUnpair = { authViewModel.unpair() },
+                onLogout = { authViewModel.logout() }
             )
         }
 

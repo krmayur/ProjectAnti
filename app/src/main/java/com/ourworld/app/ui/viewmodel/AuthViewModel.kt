@@ -127,6 +127,29 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun unpair() {
+        val user = _uiState.value.currentUser ?: return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            val result = coupleRepository.unpair(user.uid, user.partnerId)
+            result.fold(
+                onSuccess = {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isPaired = false,
+                        pairingSuccess = false
+                    )
+                },
+                onFailure = { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to unpair"
+                    )
+                }
+            )
+        }
+    }
+
     fun logout() {
         authRepository.logout()
         _uiState.value = AuthUiState()
