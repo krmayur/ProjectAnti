@@ -1,34 +1,46 @@
-# OurWorld - Firestore Security Rules
-# Deploy these to your Firebase project
+// OurWorld - Firestore Security Rules
+// Deploy these in Firebase Console -> Firestore Database -> Rules
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // User profiles - only owner can write
+    // User profiles
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth.uid == userId;
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && (
+        // Owner can update their own profile
+        request.auth.uid == userId ||
+        // Partner can pair an unpaired user with themselves
+        (
+          resource.data.isPaired == false &&
+          request.resource.data.isPaired == true &&
+          request.resource.data.partnerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'isPaired', 'partnerId'])
+        )
+      );
 
       // Avatar - only owner can modify their own avatar
       match /avatar/{avatarId} {
         allow read: if request.auth != null;
-        allow write: if request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
     // Couple data - only paired partners can read/write
     match /couples/{coupleId} {
       allow read, write: if request.auth != null &&
-        (resource == null || 
-         resource.data.partner1 == request.auth.uid || 
+        (resource == null ||
+         resource.data.partner1 == request.auth.uid ||
          resource.data.partner2 == request.auth.uid);
 
-      // Subcollections (furniture, plants, gifts, memories, etc.)
+      // Subcollections (furniture, plants, gifts, notes, memories, achievements, milestones)
       match /{subcollection}/{docId} {
-        allow read, write: if request.auth != null &&
+        allow read, write: if request.auth != null && (
           get(/databases/$(database)/documents/couples/$(coupleId)).data.partner1 == request.auth.uid ||
-          get(/databases/$(database)/documents/couples/$(coupleId)).data.partner2 == request.auth.uid;
+          get(/databases/$(database)/documents/couples/$(coupleId)).data.partner2 == request.auth.uid
+        );
       }
     }
   }
