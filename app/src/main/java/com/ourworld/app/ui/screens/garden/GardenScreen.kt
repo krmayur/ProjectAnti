@@ -130,7 +130,7 @@ fun GardenScreen(
                     }
                 }
 
-                AnimatedVisibility(
+                androidx.compose.animation.AnimatedVisibility(
                     visible = wateredToast != null,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
