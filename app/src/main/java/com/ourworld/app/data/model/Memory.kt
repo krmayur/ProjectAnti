@@ -43,3 +43,17 @@ data class Milestone(
     val isReached: Boolean = false,
     val emoji: String = "💕"
 )
+
+data class DrawPoint(
+    val x: Float = 0f,
+    val y: Float = 0f
+)
+
+data class DrawStroke(
+    val id: String = "",
+    val points: List<DrawPoint> = emptyList(),
+    val color: Long = 0xFFE57A90,
+    val strokeWidth: Float = 8f,
+    val drawnBy: String = "",
+    val createdAt: Long = System.currentTimeMillis()
+)

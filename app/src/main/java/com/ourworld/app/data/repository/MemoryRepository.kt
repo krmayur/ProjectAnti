@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import com.ourworld.app.data.model.Achievement
+import com.ourworld.app.data.model.DrawStroke
 import com.ourworld.app.data.model.Memory
 import com.ourworld.app.data.model.Milestone
 import kotlinx.coroutines.channels.awaitClose
@@ -90,6 +91,36 @@ class MemoryRepository @Inject constructor(
     suspend fun updateAnniversaryDate(coupleId: String, timestamp: Long) {
         firestore.collection("couples").document(coupleId)
             .update("anniversaryDate", timestamp).await()
+    }
+
+    fun observeDrawingStrokes(coupleId: String): Flow<List<DrawStroke>> = callbackFlow {
+        val listener = firestore.collection("couples").document(coupleId)
+            .collection("drawingStrokes")
+            .orderBy("createdAt", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val strokes = snapshot?.toObjects(DrawStroke::class.java) ?: emptyList()
+                trySend(strokes)
+            }
+        awaitClose { listener.remove() }
+    }
+
+    suspend fun addDrawingStroke(coupleId: String, stroke: DrawStroke) {
+        val withId = stroke.copy(id = UUID.randomUUID().toString())
+        firestore.collection("couples").document(coupleId)
+            .collection("drawingStrokes").document(withId.id).set(withId).await()
+    }
+
+    suspend fun clearDrawingBoard(coupleId: String) {
+        val snap = firestore.collection("couples").document(coupleId)
+            .collection("drawingStrokes").get().await()
+        if (snap.isEmpty) return
+        val batch = firestore.batch()
+        snap.documents.forEach { batch.delete(it.reference) }
+        batch.commit().await()
     }
 
     suspend fun initializeDefaultAchievements(coupleId: String) {

@@ -1,27 +1,41 @@
 package com.ourworld.app.ui.screens.memories
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ourworld.app.data.model.Achievement
+import com.ourworld.app.data.model.DrawPoint
+import com.ourworld.app.data.model.DrawStroke
 import com.ourworld.app.data.model.MemoryType
-import com.ourworld.app.data.model.Milestone
 import com.ourworld.app.ui.components.*
 import com.ourworld.app.ui.theme.*
 import com.ourworld.app.ui.viewmodel.MemoriesUiState
@@ -42,6 +56,8 @@ fun MemoriesScreen(
     userId: String,
     onAddMemory: (String, String, MemoryType) -> Unit,
     onSetAnniversaryDate: (Long) -> Unit,
+    onAddStroke: (List<DrawPoint>, Long) -> Unit,
+    onClearBoard: () -> Unit,
     onToggleAdding: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
@@ -130,12 +146,14 @@ fun MemoriesScreen(
             }
         }
 
-        // Milestones
-        if (uiState.milestones.isNotEmpty()) {
-            item { SectionHeader(title = "Milestones", emoji = "💕") }
-            items(uiState.milestones) { milestone ->
-                MilestoneCard(milestone)
-            }
+        // Real-Time Shared Drawing Board
+        item {
+            SectionHeader(title = "Shared Drawing Board", emoji = "🎨")
+            SharedDrawingBoardCard(
+                strokes = uiState.drawingStrokes,
+                onStrokeComplete = onAddStroke,
+                onClearBoard = onClearBoard
+            )
         }
 
         // Achievements
@@ -182,12 +200,12 @@ fun MemoriesScreen(
             }
         }
 
-        if (uiState.memories.isEmpty() && uiState.milestones.isEmpty()) {
+        if (uiState.memories.isEmpty()) {
             item {
                 EmptyStateMessage(
                     emoji = "📸",
                     title = "No memories yet",
-                    subtitle = "Start creating beautiful memories together! 💕"
+                    subtitle = "Tap + to save a memory, or doodle together above! 💕"
                 )
             }
         }
@@ -346,31 +364,148 @@ private fun TimeUnitBox(
 }
 
 @Composable
-private fun MilestoneCard(milestone: Milestone) {
+private fun SharedDrawingBoardCard(
+    strokes: List<DrawStroke>,
+    onStrokeComplete: (List<DrawPoint>, Long) -> Unit,
+    onClearBoard: () -> Unit
+) {
+    val brushColors = listOf(
+        0xFFE57A90L, // Rose
+        0xFF9B7EDEL, // Lavender
+        0xFF52B788L, // Mint
+        0xFF5B8DEFL, // Sky
+        0xFFF4A261L, // Peach
+        0xFF5C3A1EL  // Warm Brown
+    )
+    var selectedColor by remember { mutableStateOf(brushColors[0]) }
+    var activePoints by remember { mutableStateOf<List<DrawPoint>>(emptyList()) }
+
     CozyCard(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(milestone.emoji, fontSize = 28.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    milestone.title,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OurWorldDarkBrown
-                )
-                Text(
-                    milestone.description,
-                    fontSize = 13.sp,
-                    color = OurWorldWarmBrown
-                )
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    brushColors.forEach { hex ->
+                        val isSelected = selectedColor == hex
+                        Box(
+                            modifier = Modifier
+                                .size(if (isSelected) 28.dp else 22.dp)
+                                .clip(CircleShape)
+                                .background(Color(hex))
+                                .then(
+                                    if (isSelected) Modifier.border(2.dp, OurWorldDarkBrown, CircleShape)
+                                    else Modifier
+                                )
+                                .clickable { selectedColor = hex }
+                        )
+                    }
+                }
+                IconButton(onClick = onClearBoard, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        Icons.Outlined.Delete,
+                        contentDescription = "Clear Board",
+                        tint = OurWorldWarmBrown,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
-            if (milestone.isReached) {
-                Text("✅", fontSize = 20.sp)
-            } else {
-                Text(
-                    "${milestone.daysTogetherRequired}d",
-                    fontSize = 12.sp,
-                    color = OurWorldLightRose
-                )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(OurWorldCream)
+                    .border(1.dp, OurWorldLightRose.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(selectedColor) {
+                            detectDragGestures(
+                                onDragStart = { start ->
+                                    val w = size.width.toFloat().coerceAtLeast(1f)
+                                    val h = size.height.toFloat().coerceAtLeast(1f)
+                                    activePoints = listOf(DrawPoint(start.x / w, start.y / h))
+                                },
+                                onDragEnd = {
+                                    if (activePoints.size >= 2) {
+                                        onStrokeComplete(activePoints, selectedColor)
+                                    }
+                                    activePoints = emptyList()
+                                },
+                                onDragCancel = {
+                                    activePoints = emptyList()
+                                }
+                            ) { change, _ ->
+                                change.consume()
+                                val w = size.width.toFloat().coerceAtLeast(1f)
+                                val h = size.height.toFloat().coerceAtLeast(1f)
+                                val pt = DrawPoint(
+                                    (change.position.x / w).coerceIn(0f, 1f),
+                                    (change.position.y / h).coerceIn(0f, 1f)
+                                )
+                                activePoints = activePoints + pt
+                            }
+                        }
+                ) {
+                    val w = size.width
+                    val h = size.height
+
+                    // Synced strokes from both partners
+                    strokes.forEach { stroke ->
+                        if (stroke.points.size >= 2) {
+                            val path = Path().apply {
+                                moveTo(stroke.points.first().x * w, stroke.points.first().y * h)
+                                for (i in 1 until stroke.points.size) {
+                                    lineTo(stroke.points[i].x * w, stroke.points[i].y * h)
+                                }
+                            }
+                            drawPath(
+                                path = path,
+                                color = Color(stroke.color),
+                                style = Stroke(
+                                    width = stroke.strokeWidth,
+                                    cap = StrokeCap.Round,
+                                    join = StrokeJoin.Round
+                                )
+                            )
+                        }
+                    }
+
+                    // Current live stroke
+                    if (activePoints.size >= 2) {
+                        val path = Path().apply {
+                            moveTo(activePoints.first().x * w, activePoints.first().y * h)
+                            for (i in 1 until activePoints.size) {
+                                lineTo(activePoints[i].x * w, activePoints[i].y * h)
+                            }
+                        }
+                        drawPath(
+                            path = path,
+                            color = Color(selectedColor),
+                            style = Stroke(
+                                width = 8f,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                    }
+                }
+
+                if (strokes.isEmpty() && activePoints.isEmpty()) {
+                    Text(
+                        "Draw together in real time ✨",
+                        fontSize = 13.sp,
+                        color = OurWorldWarmBrown.copy(alpha = 0.65f),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
     }

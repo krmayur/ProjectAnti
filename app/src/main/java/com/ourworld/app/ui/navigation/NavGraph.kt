@@ -221,6 +221,8 @@ fun OurWorldNavGraph(
                 userId = userId,
                 onAddMemory = { title, desc, type -> memoriesViewModel.addMemory(coupleId, title, desc, type, userId) },
                 onSetAnniversaryDate = { timestamp -> memoriesViewModel.setAnniversaryDate(coupleId, timestamp) },
+                onAddStroke = { points, color -> memoriesViewModel.addDrawingStroke(coupleId, points, color, userId) },
+                onClearBoard = { memoriesViewModel.clearDrawingBoard(coupleId) },
                 onToggleAdding = { memoriesViewModel.toggleAddingMemory() }
             )
         }
