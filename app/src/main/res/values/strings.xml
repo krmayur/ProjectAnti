@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">OurWorld</string>
+    <string name="app_tagline">Your cozy shared home 💕</string>
+    <string name="login">Welcome Home</string>
+    <string name="register">Create Home</string>
+    <string name="pair">Find Partner</string>
+    <string name="home">Home</string>
+    <string name="garden">Garden</string>
+    <string name="activities">Activities</string>
+    <string name="gifts">Gifts</string>
+    <string name="memories">Memories</string>
+    <string name="avatar">Avatar</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Sign Out</string>
+    <string name="pairing_code_hint">Enter partner\'s code</string>
+    <string name="share_code_message">Come join our cozy home on OurWorld! 🏠💕 Use our couple pairing code: %s</string>
+</resources>

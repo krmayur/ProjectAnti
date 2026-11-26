@@ -1,0 +1,35 @@
+# OurWorld - Firestore Security Rules
+# Deploy these to your Firebase project
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profiles - only owner can write
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId;
+
+      // Avatar - only owner can modify their own avatar
+      match /avatar/{avatarId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == userId;
+      }
+    }
+
+    // Couple data - only paired partners can read/write
+    match /couples/{coupleId} {
+      allow read, write: if request.auth != null &&
+        (resource == null || 
+         resource.data.partner1 == request.auth.uid || 
+         resource.data.partner2 == request.auth.uid);
+
+      // Subcollections (furniture, plants, gifts, memories, etc.)
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null &&
+          get(/databases/$(database)/documents/couples/$(coupleId)).data.partner1 == request.auth.uid ||
+          get(/databases/$(database)/documents/couples/$(coupleId)).data.partner2 == request.auth.uid;
+      }
+    }
+  }
+}

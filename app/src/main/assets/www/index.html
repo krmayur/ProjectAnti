@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OurWorld — Cozy Virtual Home for Long-Distance Couples</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@500;600;700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-cream: #FFF8F2;
+      --rose-soft: #F7B7C2;
+      --rose-deep: #E57A90;
+      --peach-soft: #FFD6BA;
+      --sage-soft: #C7E3D0;
+      --sage-deep: #6FA684;
+      --lavender-soft: #DCD4F7;
+      --cocoa: #59433C;
+      --cocoa-light: #8A6F66;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--cocoa);
+      background: radial-gradient(circle at 20% 15%, #FFE7DC 0%, #FFF6EE 42%, #EDE7FA 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-display { font-family: 'Quicksand', 'Nunito', sans-serif; }
+    .font-hand { font-family: 'Caveat', cursive; }
+
+    /* Mobile App Shell */
+    .app-shell {
+      width: 100%;
+      max-width: 460px;
+      height: 100dvh;
+      max-height: 920px;
+      background: var(--bg-cream);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    @media (min-width: 520px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px;
+      }
+      .app-shell {
+        height: min(92vh, 860px);
+        border-radius: 34px;
+        border: 6px solid #FFFFFF;
+        box-shadow: 0 24px 60px rgba(130, 88, 76, 0.18), 0 4px 16px rgba(130, 88, 76, 0.08);
+      }
+    }
+
+    /* Custom subtle scrollbars */
+    .cozy-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .cozy-scroll::-webkit-scrollbar-track { background: transparent; }
+    .cozy-scroll::-webkit-scrollbar-thumb { background: rgba(229, 122, 144, 0.28); border-radius: 99px; }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    .animate-float { animation: floatSlow 3.2s ease-in-out infinite; }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.65; transform: scale(1.12); }
+    }
+    .sync-dot { animation: pulseSoft 2s ease-in-out infinite; }
+
+    .glass-pill {
+      background: rgba(255, 252, 248, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    .pastel-card {
+      background: #FFFFFF;
+      border: 1.5px solid #F6E6DC;
+      border-radius: 20px;
+      box-shadow: 0 4px 14px rgba(155, 110, 96, 0.06);
+    }
+    .btn-rose {
+      background: linear-gradient(135deg, #F292A5 0%, #E57A90 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(229, 122, 144, 0.32);
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn-rose:active { transform: scale(0.96); }
+    .btn-soft {
+      background: #FFF2EA;
+      color: #6B4F47;
+      border: 1px solid #F5DDD0;
+      transition: background 0.15s ease, transform 0.14s ease;
+    }
+    .btn-soft:hover { background: #FFE8DC; }
+    .btn-soft:active { transform: scale(0.96); }
+    .nav-btn.active {
+      color: #E06A83;
+    }
+    .nav-btn.active .nav-pill {
+      background: #FDE9EE;
+      transform: translateY(-2px);
+    }
+    .note-paper {
+      background: repeating-linear-gradient(
+        #FFFDF7,
+        #FFFDF7 27px,
+        #F3E6D8 28px
+      );
+      border: 1.5px solid #EFE0CE;
+      box-shadow: 0 6px 18px rgba(145, 110, 90, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <!-- Top Status / Couple Header -->
+    <header id="top-bar" class="px-3.5 pt-3 pb-2 bg-[#FFF8F2] border-b border-[#F5E7DE] flex items-center justify-between gap-2 shrink-0 z-20">
+      <div class="flex items-center gap-2 min-w-0">
+        <button id="btn-open-avatars" title="Customize Avatars & Pairing" class="w-9 h-9 rounded-2xl bg-[#FDE9EE] border border-[#F9CBD6] flex items-center justify-center shrink-0 hover:scale-105 transition">
+          <i data-lucide="heart" class="w-4 h-4 text-[#E57A90] fill-[#E57A90]"></i>
+        </button>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 id="header-couple-names" class="font-display font-bold text-sm text-[#59433C] truncate">Maya &amp; Leo</h1>
+            <span id="header-days-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#FFE9DC] text-[#B86A50] shrink-0">Day 142</span>
+          </div>
+          <div class="flex items-center gap-1.5 text-[11px] text-[#8A6F66]">
+            <span class="w-2 h-2 rounded-full bg-[#6BC08C] sync-dot inline-block"></span>
+            <span id="sync-status-text" class="truncate">Synced live · Leo is home</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <div class="flex items-center gap-1 px-2 py-1 rounded-full bg-[#FFF0F3] border border-[#FBD3DC] text-xs font-extrabold text-[#D8657E]" title="Cozy Hearts">
+          <span>♥</span><span id="currency-hearts">180</span>
+        </div>
+        <button id="btn-switch-partner" title="Switch Partner Perspective (Test Live Sync)" class="px-2 py-1 rounded-full bg-[#EFEAFE] border border-[#DBD1FB] text-[11px] font-bold text-[#6E5AA8] hover:bg-[#E5DCFD] transition flex items-center gap-1">
+          <i data-lucide="repeat-2" class="w-3 h-3"></i>
+          <span id="active-partner-label">Maya</span>
+        </button>
+        <button id="btn-toggle-music" title="Toggle Cozy Music & Sounds" class="w-8 h-8 rounded-full bg-[#FFF2EA] border border-[#F5DDD0] flex items-center justify-center text-[#8A6F66] hover:text-[#E57A90] transition">
+          <i id="music-icon" data-lucide="volume-x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main View Container -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+
+      <!-- TAB 1: SHARED HOME -->
+      <section id="view-home" class="tab-view flex-1 flex flex-col overflow-hidden">
+        <!-- Interactive 2D Home Canvas -->
+        <div id="home-stage-wrap" class="relative flex-1 min-h-[280px] bg-[#FCEEE5] overflow-hidden select-none">
+          <canvas id="home-canvas" class="w-full h-full block cursor-pointer"></canvas>
+
+          <!-- Floating Top-Left Atmosphere Pill -->
+          <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
+            <button id="btn-cycle-time" class="glass-pill px-2.5 py-1 rounded-full text-[11px] font-bold text-[#6B4F47] flex items-center gap-1 shadow-sm hover:scale-105 transition">
+              <span id="time-emoji">🌅</span><span id="time-label">Golden Hour</span>
+            </button>
+            <button id="btn-cycle-weather" class="glass-pill px-2.5 py-1 rounded-full text-[11px] font-bold text-[#6B4F47] flex items-center gap-1 shadow-sm hover:scale-105 transition">
+              <span id="weather-emoji">✨</span><span id="weather-label">Fireflies</span>
+            </button>
+          </div>
+
+          <!-- Floating Top-Right Decorate Button -->
+          <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+            <button id="btn-toggle-decorate" class="glass-pill px-2.5 py-1 rounded-full text-[11px] font-bold text-[#6B4F47] flex items-center gap-1 shadow-sm hover:scale-105 transition">
+              <i data-lucide="paintbrush" class="w-3.5 h-3.5 text-[#E57A90]"></i>
+              <span>Decorate</span>
+            </button>
+          </div>
+
+          <!-- Decorate Mode Hint Banner -->
+          <div id="decorate-hint" class="hidden absolute top-11 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-full bg-[#59433C]/90 text-white text-[11px] font-bold shadow-md whitespace-nowrap">
+            Drag furniture to move · Tap drawer to place
+          </div>
+
+          <!-- Hidden Surprises Indicator Pill -->
+          <button id="btn-surprise-pill" class="hidden absolute bottom-2.5 left-2.5 z-10 px-3 py-1.5 rounded-full bg-[#FFF7DF] border border-[#F5D68B] text-[#9A6E1C] text-xs font-extrabold shadow-md flex items-center gap-1.5 animate-float">
+            <span>🎁</span><span id="surprise-pill-text">1 surprise waiting!</span>
+          </button>
+
+          <!-- Tap-to-walk subtle hint -->
+          <div id="home-tip" class="absolute bottom-2.5 right-2.5 z-10 glass-pill px-2.5 py-1 rounded-full text-[10px] font-bold text-[#8A6F66]">
+            Tap room to walk · Tap 🎁 to open
+          </div>
+        </div>
+
+        <!-- Bottom Action Dock (Interactions OR Decorate Drawer) -->
+        <div id="home-interactions-bar" class="bg-[#FFFDFB] border-t border-[#F5E7DE] px-3 py-2.5 shrink-0">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#A7887D]">Couple Moments</span>
+            <button id="btn-quick-note" class="text-[11px] font-bold text-[#E57A90] hover:underline flex items-center gap-1">
+              <i data-lucide="mail" class="w-3.5 h-3.5"></i> Hide Note
+            </button>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button data-action="hug" class="couple-action-btn btn-soft rounded-2xl py-2 px-1 flex flex-col items-center gap-0.5">
+              <span class="text-base leading-none">🤗</span>
+              <span class="text-[10px] font-bold">Hug</span>
+            </button>
+            <button data-action="wave" class="couple-action-btn btn-soft rounded-2xl py-2 px-1 flex flex-col items-center gap-0.5">
+              <span class="text-base leading-none">👋</span>
+              <span class="text-[10px] font-bold">Wave</span>
+            </button>
+            <button data-action="dance" class="couple-action-btn btn-soft rounded-2xl py-2 px-1 flex flex-col items-center gap-0.5">
+              <span class="text-base leading-none">💃</span>
+              <span class="text-[10px] font-bold">Dance</span>
+            </button>
+            <button data-action="hands" class="couple-action-btn btn-soft rounded-2xl py-2 px-1 flex flex-col items-center gap-0.5">
+              <span class="text-base leading-none">🤝</span>
+              <span class="text-[10px] font-bold">Hold Hands</span>
+            </button>
+            <button data-action="kiss" class="couple-action-btn btn-soft rounded-2xl py-2 px-1 flex flex-col items-center gap-0.5">
+              <span class="text-base leading-none">💌</span>
+              <span class="text-[10px] font-bold">Send Love</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Decorate Drawer -->
+        <div id="home-decorate-drawer" class="hidden bg-[#FFFDFB] border-t border-[#F5E7DE] px-3 py-2.5 shrink-0 max-h-[230px] flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex gap-1.5">
+              <button data-dtab="furniture" class="dtab-btn px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#FDE9EE] text-[#D8657E]">Furniture</button>
+              <button data-dtab="wallpaper" class="dtab-btn px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#FFF2EA] text-[#8A6F66]">Wallpaper</button>
+              <button data-dtab="floor" class="dtab-btn px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#FFF2EA] text-[#8A6F66]">Flooring</button>
+              <button data-dtab="lighting" class="dtab-btn px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#FFF2EA] text-[#8A6F66]">Ambience</button>
+            </div>
+            <button id="btn-close-decorate" class="text-xs font-extrabold text-[#E57A90] px-2 py-0.5">Done</button>
+          </div>
+          <div id="decorate-items-grid" class="grid grid-cols-3 gap-2 overflow-y-auto cozy-scroll pb-1"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SHARED GARDEN -->
+      <section id="view-garden" class="tab-view hidden flex-1 flex flex-col overflow-hidden">
+        <div class="relative h-[220px] shrink-0 bg-[#DFF2E4] overflow-hidden border-b border-[#DCECE0]">
+          <canvas id="garden-canvas" class="w-full h-full block"></canvas>
+          <div class="absolute top-2.5 left-3 glass-pill px-3 py-1 rounded-full text-xs font-extrabold text-[#4E7A5D] flex items-center gap-1.5">
+            <span>🌿</span><span>Our Shared Garden</span>
+          </div>
+          <button id="btn-water-all" class="absolute top-2.5 right-3 px-3 py-1 rounded-full bg-[#68B7E8] text-white text-xs font-extrabold shadow-sm hover:bg-[#52A7DC] transition flex items-center gap-1">
+            <span>💧</span><span>Water All</span>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto cozy-scroll p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-display font-bold text-base text-[#59433C]">Garden Plots</h2>
+              <p class="text-xs text-[#8A6F66]">Plant seeds together &amp; water to help them bloom</p>
+            </div>
+            <span id="garden-bloom-count" class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-[#E5F6EA] text-[#4A8761]">0 Harvested</span>
+          </div>
+
+          <div id="garden-plots-grid" class="grid grid-cols-2 gap-2.5"></div>
+
+          <div class="pastel-card p-3">
+            <h3 class="font-display font-bold text-xs uppercase tracking-wider text-[#8A6F66] mb-2">Seed Pouch</h3>
+            <div id="seed-pouch-list" class="grid grid-cols-3 gap-2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ACTIVITIES, DAILY REWARDS, SHOP & MILESTONES -->
+      <section id="view-activities" class="tab-view hidden flex-1 overflow-y-auto cozy-scroll p-3.5 space-y-3.5">
+        <div class="grid grid-cols-3 gap-1.5 bg-[#F7ECE5] p-1 rounded-2xl">
+          <button data-atab="daily" class="atab-btn py-1.5 rounded-xl text-xs font-extrabold bg-white text-[#E06A83] shadow-sm">Daily</button>
+          <button data-atab="shop" class="atab-btn py-1.5 rounded-xl text-xs font-extrabold text-[#8A6F66]">Cozy Shop</button>
+          <button data-atab="badges" class="atab-btn py-1.5 rounded-xl text-xs font-extrabold text-[#8A6F66]">Achievements</button>
+        </div>
+
+        <!-- Daily Panel -->
+        <div id="activities-daily" class="space-y-3">
+          <div class="pastel-card p-3.5 bg-gradient-to-br from-[#FFF9F2] to-[#FFF0F4]">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h2 class="font-display font-bold text-sm text-[#59433C]">Daily Check-In Gift</h2>
+                <p id="streak-subtitle" class="text-[11px] text-[#8A6F66]">3-day couple streak · Keep coming home!</p>
+              </div>
+              <button id="btn-claim-daily" class="btn-rose px-3 py-1.5 rounded-full text-xs font-extrabold">Claim +35 ♥</button>
+            </div>
+            <div id="daily-streak-row" class="grid grid-cols-7 gap-1 text-center"></div>
+          </div>
+
+          <div class="pastel-card p-3.5">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-sm">💭</span>
+              <h3 class="font-display font-bold text-sm text-[#59433C]">Today's Couple Question</h3>
+            </div>
+            <p id="daily-prompt-question" class="text-xs font-semibold text-[#7A5E55] mb-2.5">What's one tiny moment from this week you wish we could have shared in person?</p>
+            <div id="daily-prompt-answers" class="space-y-1.5 mb-2.5"></div>
+            <div class="flex gap-1.5">
+              <input id="daily-prompt-input" type="text" placeholder="Write your answer..." class="flex-1 px-3 py-2 rounded-xl bg-[#FFF8F3] border border-[#F0DDD2] text-xs focus:outline-none focus:border-[#E57A90]" />
+              <button id="btn-submit-prompt" class="btn-rose px-3.5 py-2 rounded-xl text-xs font-extrabold">Share</button>
+            </div>
+          </div>
+
+          <div class="pastel-card p-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-sm text-[#59433C]">Daily Couple Challenges</h3>
+              <span id="challenges-progress" class="text-[11px] font-bold text-[#6FA684]">0/4 done</span>
+            </div>
+            <div id="challenges-list" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- Shop Panel -->
+        <div id="activities-shop" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-[#8A6F66]">Unlock cozy furniture, outfits &amp; rare seeds with Hearts</p>
+          </div>
+          <div id="shop-grid" class="grid grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- Achievements Panel -->
+        <div id="activities-badges" class="hidden space-y-2.5">
+          <div id="achievements-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SURPRISE GIFTS & HANDWRITTEN NOTES -->
+      <section id="view-gifts" class="tab-view hidden flex-1 overflow-y-auto cozy-scroll p-3.5 space-y-3.5">
+        <div class="pastel-card p-3.5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">🎁</span>
+            <div>
+              <h2 class="font-display font-bold text-sm text-[#59433C]">Hide a Surprise at Home</h2>
+              <p class="text-[11px] text-[#8A6F66]">Leave a gift &amp; handwritten note for <span class="partner-other-name font-bold text-[#E06A83]">Leo</span> to discover</p>
+            </div>
+          </div>
+
+          <label class="block text-[11px] font-extrabold text-[#8A6F66] mb-1">1. Choose a little gift</label>
+          <div id="gift-type-picker" class="grid grid-cols-4 gap-1.5 mb-3"></div>
+
+          <label class="block text-[11px] font-extrabold text-[#8A6F66] mb-1">2. Pick a hiding spot in the room</label>
+          <div id="gift-spot-picker" class="grid grid-cols-2 gap-1.5 mb-3"></div>
+
+          <label class="block text-[11px] font-extrabold text-[#8A6F66] mb-1">3. Write a handwritten note</label>
+          <textarea id="gift-note-input" rows="3" placeholder="Thinking of you today! Tap to unwrap a warm hug..." class="w-full p-3 rounded-2xl note-paper font-hand text-lg leading-7 text-[#59433C] focus:outline-none focus:border-[#E57A90] mb-2.5 resize-none"></textarea>
+
+          <button id="btn-hide-surprise" class="w-full btn-rose py-2.5 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Wrap &amp; Hide in Our Home</span>
+          </button>
+        </div>
+
+        <div class="pastel-card p-3.5">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display font-bold text-sm text-[#59433C]">Hidden &amp; Unwrapped Surprises</h3>
+            <span id="gifts-count-badge" class="text-[11px] font-bold text-[#E06A83]">2 items</span>
+          </div>
+          <div id="gifts-history-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- TAB 5: MEMORIES & MILESTONES -->
+      <section id="view-memories" class="tab-view hidden flex-1 overflow-y-auto cozy-scroll p-3.5 space-y-3.5">
+        <div class="pastel-card p-4 bg-gradient-to-br from-[#FDEEF2] via-[#FFF8F2] to-[#EFEBFD] text-center relative overflow-hidden">
+          <p class="text-[11px] font-extrabold uppercase tracking-widest text-[#B57B8B]">Together Since <span id="mem-anniversary-text">Jul 7, 2026</span></p>
+          <div class="font-display font-bold text-3xl text-[#59433C] my-1"><span id="mem-days-big">142</span> Days</div>
+          <p class="text-xs text-[#7D635B] mb-3">Two hearts, different time zones, one cozy home.</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white/80 rounded-2xl py-2 px-1 border border-[#F5E4EC]">
+              <div id="stat-hugs" class="font-display font-bold text-base text-[#E06A83]">12</div>
+              <div class="text-[10px] font-bold text-[#8A6F66]">Hugs Shared</div>
+            </div>
+            <div class="bg-white/80 rounded-2xl py-2 px-1 border border-[#F5E4EC]">
+              <div id="stat-notes" class="font-display font-bold text-base text-[#8268C4]">4</div>
+              <div class="text-[10px] font-bold text-[#8A6F66]">Surprises</div>
+            </div>
+            <div class="bg-white/80 rounded-2xl py-2 px-1 border border-[#F5E4EC]">
+              <div id="stat-blooms" class="font-display font-bold text-base text-[#5C9A73]">3</div>
+              <div class="text-[10px] font-bold text-[#8A6F66]">Blooms</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pastel-card p-3.5">
+          <h3 class="font-display font-bold text-sm text-[#59433C] mb-2">Pin a New Polaroid Memory</h3>
+          <div class="flex gap-1.5 mb-2">
+            <select id="memory-sticker" class="px-2.5 py-2 rounded-xl bg-[#FFF8F3] border border-[#F0DDD2] text-sm">
+              <option value="🌙">🌙 Late Call</option>
+              <option value="☕">☕ Coffee Date</option>
+              <option value="🎬">🎬 Movie Night</option>
+              <option value="✈️">✈️ Countdown</option>
+              <option value="🌸">🌸 Sweet Moment</option>
+              <option value="💌">💌 Love Letter</option>
+            </select>
+            <input id="memory-title-input" type="text" placeholder="e.g., Watched sunset on video call..." class="flex-1 px-3 py-2 rounded-xl bg-[#FFF8F3] border border-[#F0DDD2] text-xs focus:outline-none focus:border-[#E57A90]" />
+          </div>
+          <button id="btn-add-memory" class="w-full btn-soft py-2 rounded-xl text-xs font-extrabold text-[#D8657E]">+ Save to Scrapbook</button>
+        </div>
+
+        <div id="memories-timeline" class="space-y-2.5 pb-2"></div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bg-white border-t border-[#F4E6DD] px-2 pt-1.5 pb-2 grid grid-cols-5 shrink-0 z-20">
+      <button data-tab="home" class="nav-btn active flex flex-col items-center gap-0.5 text-[#9C8178]">
+        <div class="nav-pill px-3.5 py-1 rounded-full transition"><i data-lucide="home" class="w-4 h-4"></i></div>
+        <span class="text-[10px] font-extrabold">Home</span>
+      </button>
+      <button data-tab="garden" class="nav-btn flex flex-col items-center gap-0.5 text-[#9C8178]">
+        <div class="nav-pill px-3.5 py-1 rounded-full transition"><i data-lucide="flower-2" class="w-4 h-4"></i></div>
+        <span class="text-[10px] font-extrabold">Garden</span>
+      </button>
+      <button data-tab="activities" class="nav-btn flex flex-col items-center gap-0.5 text-[#9C8178] relative">
+        <div class="nav-pill px-3.5 py-1 rounded-full transition"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+        <span class="text-[10px] font-extrabold">Activities</span>
+      </button>
+      <button data-tab="gifts" class="nav-btn flex flex-col items-center gap-0.5 text-[#9C8178] relative">
+        <div class="nav-pill px-3.5 py-1 rounded-full transition"><i data-lucide="gift" class="w-4 h-4"></i></div>
+        <span id="nav-gift-dot" class="hidden absolute top-0.5 right-4 w-2 h-2 rounded-full bg-[#E57A90]"></span>
+        <span class="text-[10px] font-extrabold">Gifts</span>
+      </button>
+      <button data-tab="memories" class="nav-btn flex flex-col items-center gap-0.5 text-[#9C8178]">
+        <div class="nav-pill px-3.5 py-1 rounded-full transition"><i data-lucide="book-heart" class="w-4 h-4"></i></div>
+        <span class="text-[10px] font-extrabold">Memories</span>
+      </button>
+    </nav>
+
+    <!-- ONBOARDING / AVATAR STUDIO & PAIRING MODAL -->
+    <div id="onboarding-modal" class="absolute inset-0 z-40 bg-[#FFF8F2] flex flex-col overflow-hidden">
+      <div class="px-5 pt-3.5 pb-2 text-center shrink-0">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDE9EE] text-[#D8657E] text-[11px] font-extrabold mb-1.5">
+          <span>🏡</span><span>Welcome to OurWorld</span>
+        </div>
+        <h2 class="font-display font-bold text-xl text-[#59433C]">Create Your Cozy Home Together</h2>
+        <p class="text-xs text-[#8A6F66] mt-0.5">Customize both avatars &amp; link your devices with a pairing code</p>
+      </div>
+
+      <!-- Live Couple Preview Canvas -->
+      <div class="mx-5 rounded-3xl bg-gradient-to-b from-[#FDEFE6] to-[#F8E2EA] border-2 border-white shadow-inner h-[112px] relative shrink-0 overflow-hidden">
+        <canvas id="preview-canvas" class="w-full h-full block"></canvas>
+      </div>
+
+      <!-- Customizer Form -->
+      <div class="flex-1 overflow-y-auto cozy-scroll px-5 py-2.5 space-y-2">
+        <div class="grid grid-cols-2 gap-2 bg-[#F5E9E2] p-1 rounded-2xl">
+          <button id="edit-p1-btn" class="py-1.5 rounded-xl text-xs font-extrabold bg-white text-[#E06A83] shadow-sm">Partner 1</button>
+          <button id="edit-p2-btn" class="py-1.5 rounded-xl text-xs font-extrabold text-[#8A6F66]">Partner 2</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Name</label>
+            <input id="avatar-name-input" type="text" maxlength="14" class="w-full mt-0.5 px-3 py-1.5 rounded-xl bg-white border border-[#F0DDD2] text-xs font-bold text-[#59433C]" />
+          </div>
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Anniversary Date</label>
+            <input id="anniversary-input" type="date" class="w-full mt-0.5 px-2.5 py-1.5 rounded-xl bg-white border border-[#F0DDD2] text-xs font-bold text-[#59433C]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-extrabold text-[#8A6F66]">Skin Tone</label>
+          <div id="skin-swatches" class="flex gap-2 mt-1"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Hair Style</label>
+            <div id="hair-style-btns" class="flex flex-wrap gap-1 mt-1"></div>
+          </div>
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Hair Color</label>
+            <div id="hair-color-swatches" class="flex flex-wrap gap-1.5 mt-1"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Cozy Outfit</label>
+            <div id="outfit-btns" class="flex flex-wrap gap-1 mt-1"></div>
+          </div>
+          <div>
+            <label class="text-[11px] font-extrabold text-[#8A6F66]">Accessory</label>
+            <div id="acc-btns" class="flex flex-wrap gap-1 mt-1"></div>
+          </div>
+        </div>
+
+        <div class="pastel-card p-3 bg-[#FFFDFB]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-extrabold text-[#8A6F66]">Couple Pairing Code</span>
+            <button id="btn-regen-code" class="text-[10px] font-bold text-[#E06A83] hover:underline">New Code</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="pairing-code-input" type="text" readonly class="flex-1 px-3 py-1.5 rounded-xl bg-[#FFF4EE] border border-[#F3D8CB] text-center font-display font-bold tracking-widest text-sm text-[#59433C]" />
+            <button id="btn-copy-code" class="btn-soft px-3 py-1.5 rounded-xl text-xs font-extrabold">Copy</button>
+          </div>
+          <p class="text-[10px] text-[#9C8178] mt-1">Share this code with your partner to sync your home in real time.</p>
+        </div>
+      </div>
+
+      <div class="px-5 py-3 bg-white border-t border-[#F4E6DD] shrink-0">
+        <button id="btn-enter-home" class="w-full btn-rose py-3 rounded-2xl font-display font-bold text-sm flex items-center justify-center gap-2">
+          <span>Connect &amp; Enter Our Home</span>
+          <span>🏡</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- UNWRAP SURPRISE GIFT MODAL -->
+    <div id="unwrap-modal" class="hidden absolute inset-0 z-50 bg-[#59433C]/45 flex items-center justify-center p-5">
+      <div class="w-full max-w-[360px] pastel-card p-5 text-center relative animate-float" style="animation-duration:4s;">
+        <div id="unwrap-emoji" class="text-5xl mb-2">🎁</div>
+        <div class="text-[11px] font-extrabold uppercase tracking-wider text-[#E06A83]" id="unwrap-from">Surprise from Leo</div>
+        <h3 id="unwrap-title" class="font-display font-bold text-lg text-[#59433C] mb-3">Warm Mug of Cocoa</h3>
+        <div class="note-paper rounded-2xl p-4 text-left mb-4">
+          <p id="unwrap-note" class="font-hand text-xl leading-7 text-[#59433C]"></p>
+        </div>
+        <button id="btn-close-unwrap" class="w-full btn-rose py-2.5 rounded-2xl text-xs font-extrabold">Keep in Memories (+15 ♥)</button>
+      </div>
+    </div>
+
+    <!-- SEED PICKER MODAL FOR GARDEN PLOT -->
+    <div id="seed-modal" class="hidden absolute inset-0 z-50 bg-[#59433C]/40 flex items-end sm:items-center justify-center p-4">
+      <div class="w-full max-w-[360px] pastel-card p-4">
+        <div class="flex items-center justify-between mb-2.5">
+          <h3 class="font-display font-bold text-sm text-[#59433C]">Choose a Seed to Plant</h3>
+          <button id="btn-close-seed-modal" class="text-xs font-bold text-[#9C8178]">Cancel</button>
+        </div>
+        <div id="seed-modal-options" class="grid grid-cols-2 gap-2"></div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="pointer-events-none opacity-0 transition-all duration-300 absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-[#59433C]/92 text-white text-xs font-bold shadow-lg whitespace-nowrap max-w-[90%] truncate">
+      Synced with partner!
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    // ==================== COZY AUDIO ENGINE (Web Audio API) ====================
+    const AudioEngine = {
+      ctx: null,
+      enabled: false,
+      musicTimer: null,
+      chordIdx: 0,
+      chords: [
+        [261.63, 329.63, 392.00, 493.88], // Cmaj7
+        [220.00, 261.63, 329.63, 392.00], // Am7
+        [174.61, 220.00, 261.63, 329.63], // Fmaj7
+        [196.00, 246.94, 293.66, 392.00], // G6
+      ],
+      ensure() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      },
+      toggle() {
+        this.ensure();
+        this.enabled = !this.enabled;
+        if (this.enabled) {
+          this.startMusic();
+          this.playChime('sparkle');
+        } else {
+          this.stopMusic();
+        }
+        return this.enabled;
+      },
+      startMusic() {
+        this.stopMusic();
+        const playStep = () => {
+          if (!this.enabled || !this.ctx) return;
+          const chord = this.chords[this.chordIdx % this.chords.length];
+          this.chordIdx++;
+          chord.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            const now = this.ctx.currentTime + i * 0.14;
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.025, now + 0.18);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 2.5);
+          });
+        };
+        playStep();
+        this.musicTimer = setInterval(playStep, 2800);
+      },
+      stopMusic() {
+        if (this.musicTimer) {
+          clearInterval(this.musicTimer);
+          this.musicTimer = null;
+        }
+      },
+      playChime(type) {
+        if (!this.enabled) return;
+        this.ensure();
+        if (!this.ctx) return;
+        const notes = type === 'heart' ? [523.25, 659.25, 783.99]
+          : type === 'water' ? [392.0, 493.88, 587.33]
+          : type === 'gift' ? [523.25, 659.25, 783.99, 1046.5]
+          : [440, 554.37];
+        notes.forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = f;
+          const t = this.ctx.currentTime + idx * 0.08;
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(0.05, t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.38);
+        });
+      }
+    };
+
+    // ==================== CATALOGS ====================
+    const SKIN_TONES = ['#FFE0CC', '#F5C9A8', '#E0A882', '#BD825D', '#8C583A'];
+    const HAIR_COLORS = ['#4A352E', '#8C5B3E', '#E3B266', '#2B2630', '#C96A6A', '#8D7BB8'];
+    const HAIR_STYLES = [
+      { id: 'bob', label: 'Bob' },
+      { id: 'long', label: 'Long' },
+      { id: 'short', label: 'Fluffy' },
+      { id: 'bun', label: 'Bun' }
+    ];
+    const OUTFITS = [
+      { id: 'sweater_rose', label: 'Rose Knit', color: '#F08DA3', pants: '#6D6580', price: 0 },
+      { id: 'hoodie_sage', label: 'Sage Hoodie', color: '#7FB392', pants: '#586270', price: 0 },
+      { id: 'cardigan_cream', label: 'Cream Cozy', color: '#E8C49B', pants: '#7D635B', price: 0 },
+      { id: 'overalls_sky', label: 'Sky Overalls', color: '#86B6E0', pants: '#5A7FA8', price: 45 },
+      { id: 'pajamas_lav', label: 'Star PJs', color: '#A996DE', pants: '#8A78C2', price: 60 }
+    ];
+    const ACCESSORIES = [
+      { id: 'none', label: 'None' },
+      { id: 'glasses', label: 'Glasses' },
+      { id: 'bow', label: 'Ribbon' },
+      { id: 'beanie', label: 'Beanie' },
+      { id: 'flower', label: 'Flower' }
+    ];
+
+    const WALLPAPERS = [
+      { id: 'cream_floral', name: 'Warm Cream', top: '#FFF3E6', bot: '#F7E3D2', accent: '#F2C6CE', price: 0 },
+      { id: 'sage_stripes', name: 'Pastel Sage', top: '#E8F4EB', bot: '#D4E8D9', accent: '#B5D6BE', price: 0 },
+      { id: 'peach_blush', name: 'Peach Blush', top: '#FFE9DE', bot: '#FAD4C5', accent: '#F4AE9B', price: 35 },
+      { id: 'lavender_dream', name: 'Lavender Mist', top: '#EFEAFB', bot: '#E0D6F7', accent: '#C6B7EE', price: 45 },
+      { id: 'starry_dusk', name: 'Starry Dusk', top: '#D9DEF5', bot: '#C3CBEB', accent: '#FFF1B8', price: 60 }
+    ];
+
+    const FLOORS = [
+      { id: 'honey_oak', name: 'Honey Oak', base: '#E5BC94', line: '#D4A57A', price: 0 },
+      { id: 'soft_walnut', name: 'Warm Walnut', base: '#C79B79', line: '#B28462', price: 0 },
+      { id: 'cream_tile', name: 'Cream Tile', base: '#F3E5D8', line: '#E3D1C0', price: 30 },
+      { id: 'sage_checker', name: 'Mint Tile', base: '#D5E8DC', line: '#BDD6C6', price: 40 }
+    ];
+
+    const FURNITURE_CATALOG = [
+      { id: 'sofa', name: 'Plush Sofa', emoji: '🛋️', w: 96, h: 52, price: 0, defX: 0.50, defY: 0.60, sittable: true },
+      { id: 'rug', name: 'Heart Rug', emoji: '🧶', w: 120, h: 42, price: 0, defX: 0.50, defY: 0.77, layer: 'floor' },
+      { id: 'table', name: 'Tea Table', emoji: '☕', w: 62, h: 36, price: 0, defX: 0.50, defY: 0.73 },
+      { id: 'plant', name: 'Monstera', emoji: '🪴', w: 38, h: 56, price: 0, defX: 0.16, defY: 0.62 },
+      { id: 'lamp', name: 'Warm Lamp', emoji: '💡', w: 32, h: 74, price: 0, defX: 0.84, defY: 0.59, light: true },
+      { id: 'bookshelf', name: 'Bookshelf', emoji: '📚', w: 56, h: 76, price: 0, defX: 0.15, defY: 0.49 },
+      { id: 'record', name: 'Vinyl Player', emoji: '🎵', w: 46, h: 48, price: 45, defX: 0.82, defY: 0.73 },
+      { id: 'catbed', name: 'Cat Cushion', emoji: '🐱', w: 46, h: 30, price: 50, defX: 0.25, defY: 0.79 },
+      { id: 'polaroids', name: 'Photo String', emoji: '🖼️', w: 90, h: 34, price: 40, defX: 0.78, defY: 0.30, wall: true },
+      { id: 'fairylights', name: 'Fairy Lights', emoji: '✨', w: 220, h: 26, price: 55, defX: 0.50, defY: 0.12, wall: true, light: true },
+      { id: 'fireplace', name: 'Cozy Hearth', emoji: '🔥', w: 72, h: 66, price: 80, defX: 0.82, defY: 0.52, light: true }
+    ];
+
+    const TIME_MODES = [
+      { id: 'morning', label: 'Morning', emoji: '☀️', skyTop: '#BFE4FF', skyBot: '#FFF0D6', tint: 'rgba(255,244,214,0.08)', lampGlow: 0.15 },
+      { id: 'golden', label: 'Golden Hour', emoji: '🌅', skyTop: '#F8B6A8', skyBot: '#FFE0B5', tint: 'rgba(255,180,120,0.14)', lampGlow: 0.45 },
+      { id: 'evening', label: 'Cozy Night', emoji: '🌙', skyTop: '#3E4878', skyBot: '#6C6498', tint: 'rgba(46,42,84,0.28)', lampGlow: 0.92 }
+    ];
+
+    const WEATHER_MODES = [
+      { id: 'clear', label: 'Cozy Clear', emoji: '🌤️' },
+      { id: 'fireflies', label: 'Fireflies', emoji: '✨' },
+      { id: 'rain', label: 'Soft Rain', emoji: '🌧️' },
+      { id: 'snow', label: 'Snowfall', emoji: '❄️' }
+    ];
+
+    const SEED_CATALOG = [
+      { id: 'sunflower', name: 'Sunflower', emoji: '🌻', color: '#F7C948', reward: 22, price: 0 },
+      { id: 'lavender', name: 'Lavender', emoji: '🪻', color: '#A992E2', reward: 25, price: 0 },
+      { id: 'rose', name: 'Pastel Rose', emoji: '🌹', color: '#F07D96', reward: 30, price: 0 },
+      { id: 'strawberry', name: 'Berry Bush', emoji: '🍓', color: '#EE6C7B', reward: 34, price: 30 },
+      { id: 'tulip', name: 'Moon Tulip', emoji: '🌷', color: '#F5A5C0', reward: 40, price: 45 },
+      { id: 'forgetme', name: 'Forget-Me-Not', emoji: '🩵', color: '#7CC3F0', reward: 48, price: 60 }
+    ];
+
+    const GIFT_TYPES = [
+      { id: 'note', name: 'Love Note', emoji: '💌' },
+      { id: 'cocoa', name: 'Warm Cocoa', emoji: '☕' },
+      { id: 'bouquet', name: 'Flower Bouquet', emoji: '💐' },
+      { id: 'plush', name: 'Bear Plushie', emoji: '🧸' },
+      { id: 'vinyl', name: 'Mixtape Vinyl', emoji: '💿' },
+      { id: 'starjar', name: 'Wish Star Jar', emoji: '🫙' },
+      { id: 'cake', name: 'Berry Cake', emoji: '🍰' },
+      { id: 'polaroid', name: 'Polaroid', emoji: '📸' }
+    ];
+
+    const HIDING_SPOTS = [
+      { id: 'table', label: 'On the Tea Table', x: 0.52, y: 0.71 },
+      { id: 'sofa', label: 'By the Sofa Cushion', x: 0.42, y: 0.59 },
+      { id: 'window', label: 'On the Window Sill', x: 0.50, y: 0.36 },
+      { id: 'bookshelf', label: 'Tucked in Bookshelf', x: 0.17, y: 0.52 }
+    ];
+
+    const ACHIEVEMENTS_DEF = [
+      { id: 'first_home', title: 'Home Sweet Home', desc: 'Connect with your partner & enter OurWorld', emoji: '🏡', target: 1, key: 'paired' },
+      { id: 'warm_hugs', title: 'Cuddle Bugs', desc: 'Share 5 sweet interactions together', emoji: '🤗', target: 5, key: 'interactions' },
+      { id: 'green_thumbs', title: 'Growing Together', desc: 'Harvest 3 blooms from your shared garden', emoji: '🌻', target: 3, key: 'blooms' },
+      { id: 'secret_admirer', title: 'Little Surprises', desc: 'Hide or unwrap 3 surprise gifts & notes', emoji: '🎁', target: 3, key: 'surprises' },
+      { id: 'decorator', title: 'Cozy Nest', desc: 'Unlock 3 new items from the Cozy Shop', emoji: '🛋️', target: 3, key: 'unlocks' }
+    ];
+
+    // ==================== STATE ====================
+    const STORAGE_KEY = 'ourworld_couple_state_v1';
+
+    function defaultState() {
+      return {
+        onboarded: false,
+        pairingCode: 'OW-4829-HUG',
+        anniversary: '2026-07-07',
+        activePartner: 0,
+        hearts: 180,
+        dailyStreak: 3,
+        dailyClaimed: false,
+        partners: [
+          { name: 'Maya', skin: '#FFE0CC', hairStyle: 'long', hairColor: '#4A352E', outfit: 'sweater_rose', acc: 'bow' },
+          { name: 'Leo', skin: '#F5C9A8', hairStyle: 'short', hairColor: '#8C5B3E', outfit: 'hoodie_sage', acc: 'glasses' }
+        ],
+        home: {
+          wallpaper: 'cream_floral',
+          floor: 'honey_oak',
+          timeIdx: 1,
+          weatherIdx: 1,
+          placed: [
+            { id: 'rug', x: 0.50, y: 0.77 },
+            { id: 'bookshelf', x: 0.15, y: 0.49 },
+            { id: 'sofa', x: 0.50, y: 0.60 },
+            { id: 'table', x: 0.50, y: 0.74 },
+            { id: 'plant', x: 0.18, y: 0.66 },
+            { id: 'lamp', x: 0.84, y: 0.58 }
+          ]
+        },
+        unlocked: {
+          furniture: ['sofa', 'rug', 'table', 'plant', 'lamp', 'bookshelf'],
+          wallpaper: ['cream_floral', 'sage_stripes'],
+          floor: ['honey_oak', 'soft_walnut'],
+          outfit: ['sweater_rose', 'hoodie_sage', 'cardigan_cream'],
+          seed: ['sunflower', 'lavender', 'rose']
+        },
+        garden: [
+          { seedId: 'sunflower', stage: 3, wateredBy: ['Maya', 'Leo'] },
+          { seedId: 'lavender', stage: 2, wateredBy: ['Leo'] },
+          { seedId: 'rose', stage: 1, wateredBy: ['Maya'] },
+          { seedId: null, stage: 0, wateredBy: [] },
+          { seedId: null, stage: 0, wateredBy: [] },
+          { seedId: null, stage: 0, wateredBy: [] }
+        ],
+        gifts: [
+          {
+            id: 'g_welcome',
+            fromIdx: 1,
+            typeId: 'cocoa',
+            spotId: 'table',
+            note: 'Made you a virtual cup of warm cocoa while you work today. Counting down the days until I can hug you for real!',
+            opened: false,
+            date: 'Today'
+          },
+          {
+            id: 'g_old',
+            fromIdx: 0,
+            typeId: 'note',
+            spotId: 'window',
+            note: 'Looked at the moon tonight and thought of you in your time zone. Sweet dreams!',
+            opened: true,
+            date: 'Yesterday'
+          }
+        ],
+        challenges: [
+          { id: 'ch_hug', title: 'Share a warm hug at home', reward: 20, done: false },
+          { id: 'ch_water', title: 'Water a plant in your shared garden', reward: 20, done: false },
+          { id: 'ch_gift', title: 'Hide a note or unwrap a surprise', reward: 25, done: false },
+          { id: 'ch_prompt', title: "Answer today's Couple Question", reward: 25, done: false }
+        ],
+        promptAnswers: [
+          { partnerIdx: 1, text: 'Hearing rain outside while drinking tea — wished you were curled up on the sofa with me.' }
+        ],
+        memories: [
+          { id: 'm1', sticker: '🏡', title: 'Moved into our cozy virtual home', date: 'Jul 7, 2026', author: 'Maya & Leo' },
+          { id: 'm2', sticker: '🎬', title: 'Stayed up late for our cozy Studio Ghibli movie night', date: 'Oct 18, 2026', author: 'Leo' },
+          { id: 'm3', sticker: '🌻', title: 'Harvested our very first golden sunflower together', date: 'Nov 20, 2026', author: 'Maya' }
+        ],
+        stats: {
+          paired: 1,
+          interactions: 2,
+          blooms: 3,
+          surprises: 1,
+          unlocks: 0
+        }
+      };
+    }
+
+    let state = defaultState();
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = Object.assign(defaultState(), parsed);
+      }
+    } catch (e) {}
+
+    let syncChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        syncChannel = new BroadcastChannel('ourworld_live_sync');
+        syncChannel.onmessage = (ev) => {
+          if (ev.data && ev.data.type === 'STATE_SYNC') {
+            state = ev.data.state;
+            renderAll();
+            showToast(`Synced live from ${ev.data.sender}!`);
+          }
+        };
+      }
+    } catch (e) {}
+
+    function saveState(broadcast = true) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      if (broadcast && syncChannel) {
+        try {
+          syncChannel.postMessage({
+            type: 'STATE_SYNC',
+            sender: state.partners[state.activePartner].name,
+            state
+          });
+        } catch (e) {}
+      }
+    }
+
+    // ==================== UI & NAVIGATION STATE ====================
+    let currentTab = 'home';
+    let decorateMode = false;
+    let decorateSubTab = 'furniture';
+    let activitySubTab = 'daily';
+    let editingPartnerIdx = 0;
+    let selectedGiftType = 'note';
+    let selectedGiftSpot = 'table';
+    let plantingPlotIdx = null;
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.opacity = '1';
+      el.style.transform = 'translate(-50%, 0)';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translate(-50%, -6px)';
+      }, 2400);
+    }
+
+    function completeChallenge(chId) {
+      const ch = state.challenges.find(c => c.id === chId);
+      if (ch && !ch.done) {
+        ch.done = true;
+        state.hearts += ch.reward;
+        AudioEngine.playChime('gift');
+        showToast(`Challenge done! +${ch.reward} ♥`);
+      }
+    }
+
+    function getDaysTogether() {
+      const start = new Date(state.anniversary + 'T00:00:00');
+      const now = new Date();
+      const diff = Math.max(1, Math.floor((now - start) / 86400000));
+      return isNaN(diff) ? 142 : diff;
+    }
+
+    function formatDateShort(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      if (isNaN(d.getTime())) return 'Jul 7, 2026';
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // ==================== AVATAR DRAWING (COZY 2D CHIBI) ====================
+    function drawChibiAvatar(ctx, x, y, scale, p, animState, facing = 1, t = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      const outfit = OUTFITS.find(o => o.id === p.outfit) || OUTFITS[0];
+      let bobY = Math.sin(t * 3.2 + (facing > 0 ? 0 : 1.5)) * 2.2;
+      let tilt = 0;
+      let waveArm = 0;
+
+      if (animState === 'walk') {
+        bobY = Math.abs(Math.sin(t * 10)) * -4.5;
+      } else if (animState === 'dance') {
+        bobY = Math.abs(Math.sin(t * 8)) * -6;
+        tilt = Math.sin(t * 8) * 0.12;
+      } else if (animState === 'wave') {
+        waveArm = Math.sin(t * 12) * 0.6 - 0.8;
+      } else if (animState === 'hug') {
+        bobY = Math.sin(t * 5) * -1.8;
+        tilt = facing * 0.08;
+      }
+
+      ctx.scale(scale, scale);
+      ctx.rotate(tilt);
+
+      // Soft drop shadow
+      ctx.fillStyle = 'rgba(110, 75, 65, 0.16)';
+      ctx.beginPath();
+      ctx.ellipse(0, 2, 16, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.translate(0, bobY);
+
+      if (p.hairStyle === 'long') {
+        ctx.fillStyle = p.hairColor;
+        ctx.beginPath();
+        ctx.roundRect(-17, -44, 34, 34, 14);
+        ctx.fill();
+      }
+      if (p.hairStyle === 'bun') {
+        ctx.fillStyle = p.hairColor;
+        ctx.beginPath();
+        ctx.arc(0, -56, 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Legs
+      const legSwing = animState === 'walk' ? Math.sin(t * 10) * 3 : 0;
+      ctx.fillStyle = outfit.pants;
+      ctx.beginPath();
+      ctx.roundRect(-8, -10 + legSwing * 0.4, 6, 11, 3);
+      ctx.roundRect(2, -10 - legSwing * 0.4, 6, 11, 3);
+      ctx.fill();
+
+      // Body / Cozy Sweater
+      ctx.fillStyle = outfit.color;
+      ctx.beginPath();
+      ctx.roundRect(-12, -28, 24, 21, 9);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.beginPath();
+      ctx.arc(0, -18, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Arms
+      ctx.strokeStyle = outfit.color;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-11, -23);
+      ctx.lineTo(-16, animState === 'hands' ? -15 : -14);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(11, -23);
+      ctx.rotate(waveArm);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(5, animState === 'wave' ? -10 : 9);
+      ctx.stroke();
+      ctx.restore();
+
+      // Head
+      ctx.fillStyle = p.skin;
+      ctx.beginPath();
+      ctx.arc(0, -39, 15.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rosy cheeks
+      ctx.fillStyle = 'rgba(242, 132, 154, 0.42)';
+      ctx.beginPath();
+      ctx.ellipse(-8.5, -35, 3.2, 2, 0, 0, Math.PI * 2);
+      ctx.ellipse(8.5, -35, 3.2, 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eyes
+      const blink = Math.sin(t * 1.1 + facing) > 0.97;
+      ctx.strokeStyle = '#4A352E';
+      ctx.fillStyle = '#4A352E';
+      ctx.lineWidth = 1.8;
+      if (blink || animState === 'hug' || animState === 'dance') {
+        ctx.beginPath();
+        ctx.arc(-5.5, -39, 2.4, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(5.5, -39, 2.4, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(-5.5, -39, 2.1, 0, Math.PI * 2);
+        ctx.arc(5.5, -39, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(-6.1, -39.7, 0.8, 0, Math.PI * 2);
+        ctx.arc(4.9, -39.7, 0.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Smile
+      ctx.strokeStyle = '#7A4E45';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, -35.5, 3, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      // Hair Bangs
+      ctx.fillStyle = p.hairColor;
+      ctx.beginPath();
+      ctx.arc(0, -42, 16, Math.PI, Math.PI * 2);
+      ctx.fill();
+      if (p.hairStyle === 'bob') {
+        ctx.beginPath();
+        ctx.roundRect(-16.5, -43, 6, 15, 3);
+        ctx.roundRect(10.5, -43, 6, 15, 3);
+        ctx.fill();
+      } else if (p.hairStyle === 'short') {
+        ctx.beginPath();
+        ctx.arc(-8, -48, 5, 0, Math.PI * 2);
+        ctx.arc(0, -51, 5.5, 0, Math.PI * 2);
+        ctx.arc(8, -48, 5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(-6, -45, 7, 4, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(6, -45, 7, 4, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Accessories
+      if (p.acc === 'glasses') {
+        ctx.strokeStyle = '#6E5348';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(-5.5, -39, 4.2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(5.5, -39, 4.2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-1.3, -39);
+        ctx.lineTo(1.3, -39);
+        ctx.stroke();
+      } else if (p.acc === 'bow') {
+        ctx.fillStyle = '#F28AA0';
+        ctx.beginPath();
+        ctx.ellipse(-11, -51, 4.5, 2.8, -0.4, 0, Math.PI * 2);
+        ctx.ellipse(-5, -52, 4.5, 2.8, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFE3EA';
+        ctx.beginPath();
+        ctx.arc(-8, -51.5, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.acc === 'beanie') {
+        ctx.fillStyle = '#E58A7E';
+        ctx.beginPath();
+        ctx.arc(0, -47, 15.5, Math.PI, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFF0E8';
+        ctx.beginPath();
+        ctx.roundRect(-16, -49, 32, 4.5, 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -63, 3.8, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.acc === 'flower') {
+        ctx.fillStyle = '#FFE57F';
+        ctx.beginPath();
+        ctx.arc(10, -50, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        for (let a = 0; a < 5; a++) {
+          const ang = (a / 5) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(10 + Math.cos(ang) * 3.8, -50 + Math.sin(ang) * 3.8, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    // ==================== HOME SCENE ENGINE ====================
+    const homeActors = [
+      { x: 0.38, y: 0.72, tx: 0.38, ty: 0.72, anim: 'idle', bubble: '', bubbleT: 0 },
+      { x: 0.62, y: 0.72, tx: 0.62, ty: 0.72, anim: 'idle', bubble: '', bubbleT: 0 }
+    ];
+    let coupleAnimTimer = 0;
+    let particles = [];
+    let weatherParticles = [];
+    let draggingItem = null;
+
+    function spawnHearts(nx, ny, count = 6) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: nx + (Math.random() - 0.5) * 0.08,
+          y: ny - 0.06,
+          vx: (Math.random() - 0.5) * 0.04,
+          vy: -0.07 - Math.random() * 0.06,
+          life: 1.0,
+          emoji: Math.random() > 0.3 ? '♥' : '✨',
+          color: Math.random() > 0.5 ? '#EC728D' : '#F4B662'
+        });
+      }
+    }
+
+    function initWeatherParticles() {
+      weatherParticles = [];
+      for (let i = 0; i < 28; i++) {
+        weatherParticles.push({
+          x: Math.random(),
+          y: Math.random(),
+          s: 0.5 + Math.random() * 1.4,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+    initWeatherParticles();
+
+    function drawFurnitureItem(ctx, item, cx, cy, W, H, t, lampGlow) {
+      const s = Math.min(W, H) / 360;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(s, s);
+
+      if (item.id === 'rug') {
+        ctx.fillStyle = '#F8D7E0';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 74, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#FFF5F7';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 62, 18, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (item.id === 'sofa') {
+        ctx.fillStyle = 'rgba(110,75,65,0.14)';
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 56, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F2B8C6';
+        ctx.beginPath();
+        ctx.roundRect(-50, -24, 100, 32, 14);
+        ctx.fill();
+        ctx.fillStyle = '#F7CBD6';
+        ctx.beginPath();
+        ctx.roundRect(-44, -6, 43, 22, 9);
+        ctx.roundRect(1, -6, 43, 22, 9);
+        ctx.fill();
+        ctx.fillStyle = '#EBA3B4';
+        ctx.beginPath();
+        ctx.roundRect(-54, -10, 14, 28, 7);
+        ctx.roundRect(40, -10, 14, 28, 7);
+        ctx.fill();
+        ctx.fillStyle = '#FFF3C7';
+        ctx.beginPath();
+        ctx.roundRect(-34, -15, 18, 15, 5);
+        ctx.fill();
+        ctx.fillStyle = '#9D7157';
+        ctx.fillRect(-44, 16, 6, 7);
+        ctx.fillRect(38, 16, 6, 7);
+      } else if (item.id === 'table') {
+        ctx.fillStyle = 'rgba(110,75,65,0.13)';
+        ctx.beginPath();
+        ctx.ellipse(0, 15, 34, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#C9966E';
+        ctx.fillRect(-24, 2, 5, 13);
+        ctx.fillRect(19, 2, 5, 13);
+        ctx.fillStyle = '#E6BA95';
+        ctx.beginPath();
+        ctx.roundRect(-32, -10, 64, 14, 7);
+        ctx.fill();
+        ctx.fillStyle = '#FFF8F2';
+        ctx.beginPath();
+        ctx.arc(-10, -13, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F29EB2';
+        ctx.fillRect(8, -15, 7, 6);
+      } else if (item.id === 'plant') {
+        ctx.fillStyle = '#E29D7F';
+        ctx.beginPath();
+        ctx.roundRect(-12, 2, 24, 20, 5);
+        ctx.fill();
+        ctx.fillStyle = '#CE8465';
+        ctx.beginPath();
+        ctx.roundRect(-14, -1, 28, 6, 3);
+        ctx.fill();
+        const sway = Math.sin(t * 2) * 1.5;
+        ctx.fillStyle = '#73B389';
+        ctx.beginPath();
+        ctx.ellipse(-10 + sway, -14, 11, 7, -0.5, 0, Math.PI * 2);
+        ctx.ellipse(10 + sway, -12, 11, 7, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#8BC79E';
+        ctx.beginPath();
+        ctx.ellipse(0 + sway, -22, 10, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (item.id === 'lamp') {
+        if (lampGlow > 0.1) {
+          const g = ctx.createRadialGradient(0, -24, 4, 0, -24, 72);
+          g.addColorStop(0, `rgba(255, 224, 150, ${0.55 * lampGlow})`);
+          g.addColorStop(1, 'rgba(255, 224, 150, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(0, -24, 72, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#9E7861';
+        ctx.fillRect(-2, -20, 4, 42);
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 13, 4.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFE8B6';
+        ctx.beginPath();
+        ctx.moveTo(-16, -16);
+        ctx.lineTo(16, -16);
+        ctx.lineTo(11, -36);
+        ctx.lineTo(-11, -36);
+        ctx.closePath();
+        ctx.fill();
+      } else if (item.id === 'bookshelf') {
+        ctx.fillStyle = '#D4A37C';
+        ctx.beginPath();
+        ctx.roundRect(-26, -38, 52, 74, 6);
+        ctx.fill();
+        ctx.fillStyle = '#B88762';
+        ctx.fillRect(-22, -32, 44, 18);
+        ctx.fillRect(-22, -10, 44, 18);
+        ctx.fillRect(-22, 12, 44, 18);
+        const bookCols = ['#F294A8', '#90C2A4', '#A89AE2', '#F5CB7D', '#89BCE6'];
+        for (let r = 0; r < 3; r++) {
+          for (let b = 0; b < 5; b++) {
+            ctx.fillStyle = bookCols[(r * 2 + b) % bookCols.length];
+            ctx.fillRect(-19 + b * 8, -28 + r * 22, 6, 14);
+          }
+        }
+      } else if (item.id === 'record') {
+        ctx.fillStyle = '#D9A782';
+        ctx.beginPath();
+        ctx.roundRect(-22, -12, 44, 30, 5);
+        ctx.fill();
+        ctx.fillStyle = '#3B343D';
+        ctx.beginPath();
+        ctx.ellipse(0, -14, 14, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F28AA0';
+        ctx.beginPath();
+        ctx.ellipse(0, -14, 4, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (item.id === 'catbed') {
+        ctx.fillStyle = '#E6D6FA';
+        ctx.beginPath();
+        ctx.ellipse(0, 4, 22, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F6C79C';
+        ctx.beginPath();
+        ctx.ellipse(0, 1, 13, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(-8, -2, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (item.id === 'polaroids') {
+        ctx.strokeStyle = '#B08F82';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-42, -6);
+        ctx.quadraticCurveTo(0, 8, 42, -6);
+        ctx.stroke();
+        [-26, 0, 26].forEach((px, idx) => {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(px - 8, -4 + (idx === 1 ? 4 : 0), 16, 19);
+          ctx.fillStyle = ['#F7C6D0', '#CBE4F9', '#D6ECDB'][idx];
+          ctx.fillRect(px - 6, -2 + (idx === 1 ? 4 : 0), 12, 11);
+        });
+      } else if (item.id === 'fairylights') {
+        ctx.strokeStyle = 'rgba(140, 110, 95, 0.5)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(-110, -6);
+        ctx.quadraticCurveTo(0, 18, 110, -6);
+        ctx.stroke();
+        for (let i = -4; i <= 4; i++) {
+          const lx = i * 24;
+          const ly = 6 - Math.abs(i) * 2.2;
+          const tw = 0.65 + 0.35 * Math.sin(t * 4 + i);
+          ctx.fillStyle = `rgba(255, 232, 150, ${tw})`;
+          ctx.beginPath();
+          ctx.arc(lx, ly, 4.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (item.id === 'fireplace') {
+        if (lampGlow > 0.1) {
+          const g = ctx.createRadialGradient(0, 8, 4, 0, 8, 65);
+          g.addColorStop(0, `rgba(255, 170, 95, ${0.48 * lampGlow})`);
+          g.addColorStop(1, 'rgba(255, 170, 95, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(0, 8, 65, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#F5EAE2';
+        ctx.beginPath();
+        ctx.roundRect(-34, -30, 68, 56, 6);
+        ctx.fill();
+        ctx.fillStyle = '#D9B8A3';
+        ctx.beginPath();
+        ctx.roundRect(-38, -34, 76, 8, 4);
+        ctx.fill();
+        ctx.fillStyle = '#4B3A35';
+        ctx.beginPath();
+        ctx.roundRect(-20, -10, 40, 36, [16, 16, 0, 0]);
+        ctx.fill();
+        const fl = Math.sin(t * 10) * 2;
+        ctx.fillStyle = '#FF9C59';
+        ctx.beginPath();
+        ctx.ellipse(0, 14, 11, 12 + fl, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFE17D';
+        ctx.beginPath();
+        ctx.ellipse(0, 17, 6, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (decorateMode && draggingItem === item) {
+        ctx.strokeStyle = '#E57A90';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeRect(-35, -35, 70, 70);
+        ctx.setLineDash([]);
+      }
+
+      ctx.restore();
+    }
+
+    function renderHomeCanvas(t) {
+      const canvas = document.getElementById('home-canvas');
+      if (!canvas || currentTab !== 'home') return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+      }
+
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+      const floorY = H * 0.56;
+
+      const wp = WALLPAPERS.find(w => w.id === state.home.wallpaper) || WALLPAPERS[0];
+      const fl = FLOORS.find(f => f.id === state.home.floor) || FLOORS[0];
+      const tm = TIME_MODES[state.home.timeIdx % TIME_MODES.length];
+      const wt = WEATHER_MODES[state.home.weatherIdx % WEATHER_MODES.length];
+
+      // 1. Wall Gradient
+      const wg = ctx.createLinearGradient(0, 0, 0, floorY);
+      wg.addColorStop(0, wp.top);
+      wg.addColorStop(1, wp.bot);
+      ctx.fillStyle = wg;
+      ctx.fillRect(0, 0, W, floorY);
+
+      ctx.fillStyle = wp.accent;
+      ctx.globalAlpha = 0.28;
+      for (let wx = 18; wx < W; wx += 34) {
+        ctx.fillRect(wx, 0, 6, floorY);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = '#FFFDFB';
+      ctx.fillRect(0, floorY - 10, W, 10);
+      ctx.fillStyle = 'rgba(130,90,75,0.12)';
+      ctx.fillRect(0, floorY - 1, W, 2);
+
+      // 2. Arched Window
+      const winW = Math.min(130, W * 0.34);
+      const winH = Math.min(110, floorY * 0.62);
+      const winX = W * 0.5 - winW / 2;
+      const winY = floorY * 0.18;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(winX, winY, winW, winH, [winW / 2, winW / 2, 8, 8]);
+      ctx.clip();
+      const sg = ctx.createLinearGradient(0, winY, 0, winY + winH);
+      sg.addColorStop(0, tm.skyTop);
+      sg.addColorStop(1, tm.skyBot);
+      ctx.fillStyle = sg;
+      ctx.fillRect(winX, winY, winW, winH);
+
+      if (tm.id === 'evening') {
+        ctx.fillStyle = '#FFF5C4';
+        ctx.beginPath();
+        ctx.arc(winX + winW * 0.7, winY + winH * 0.32, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        [[0.25,0.28],[0.45,0.2],[0.32,0.48],[0.8,0.5]].forEach(([sx,sy]) => {
+          ctx.beginPath();
+          ctx.arc(winX + winW * sx, winY + winH * sy, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else {
+        ctx.fillStyle = tm.id === 'golden' ? '#FFD28A' : '#FFF7C2';
+        ctx.beginPath();
+        ctx.arc(winX + winW * 0.68, winY + winH * 0.34, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        const cx = winX + ((t * 6) % (winW + 40)) - 20;
+        ctx.beginPath();
+        ctx.arc(cx, winY + winH * 0.48, 10, 0, Math.PI * 2);
+        ctx.arc(cx + 10, winY + winH * 0.46, 12, 0, Math.PI * 2);
+        ctx.arc(cx + 20, winY + winH * 0.49, 9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = tm.id === 'evening' ? '#4F5C7E' : '#A9D6B5';
+      ctx.beginPath();
+      ctx.ellipse(winX + winW * 0.3, winY + winH + 6, winW * 0.55, 28, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.roundRect(winX, winY, winW, winH, [winW / 2, winW / 2, 8, 8]);
+      ctx.stroke();
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(winX + winW / 2, winY);
+      ctx.lineTo(winX + winW / 2, winY + winH);
+      ctx.moveTo(winX, winY + winH * 0.56);
+      ctx.lineTo(winX + winW, winY + winH * 0.56);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255, 232, 236, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(winX - 10, winY + 12, 16, winH - 8, 8);
+      ctx.roundRect(winX + winW - 6, winY + 12, 16, winH - 8, 8);
+      ctx.fill();
+
+      // 3. Floor
+      ctx.fillStyle = fl.base;
+      ctx.fillRect(0, floorY, W, H - floorY);
+      ctx.strokeStyle = fl.line;
+      ctx.lineWidth = 1.5;
+      for (let fy = floorY + 22; fy < H; fy += 24) {
+        ctx.beginPath();
+        ctx.moveTo(0, fy);
+        ctx.lineTo(W, fy);
+        ctx.stroke();
+      }
+
+      // 4. Rug & Wall Items
+      state.home.placed.forEach(item => {
+        const def = FURNITURE_CATALOG.find(f => f.id === item.id);
+        if (def && (def.layer === 'floor' || def.wall)) {
+          drawFurnitureItem(ctx, item, item.x * W, item.y * H, W, H, t, tm.lampGlow);
+        }
+      });
+
+      // 5. Depth-sorted Furniture + Avatars
+      if (coupleAnimTimer > 0) {
+        coupleAnimTimer -= 0.016;
+        if (coupleAnimTimer <= 0) {
+          homeActors[0].anim = 'idle';
+          homeActors[1].anim = 'idle';
+        }
+      }
+      homeActors.forEach((a) => {
+        const dx = a.tx - a.x;
+        const dy = a.ty - a.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 0.008) {
+          a.x += (dx / dist) * 0.0045;
+          a.y += (dy / dist) * 0.0045;
+          if (coupleAnimTimer <= 0) a.anim = 'walk';
+        } else if (coupleAnimTimer <= 0 && a.anim === 'walk') {
+          a.anim = 'idle';
+        }
+        if (a.bubbleT > 0) a.bubbleT -= 0.016;
+      });
+
+      const drawables = [];
+      state.home.placed.forEach(item => {
+        const def = FURNITURE_CATALOG.find(f => f.id === item.id);
+        if (def && def.layer !== 'floor' && !def.wall) {
+          drawables.push({ kind: 'furn', y: item.y * H, item });
+        }
+      });
+      homeActors.forEach((actor, idx) => {
+        drawables.push({ kind: 'actor', y: actor.y * H, actor, idx });
+      });
+      drawables.sort((a, b) => a.y - b.y);
+
+      const avScale = Math.max(0.85, Math.min(1.15, W / 360));
+      drawables.forEach(d => {
+        if (d.kind === 'furn') {
+          drawFurnitureItem(ctx, d.item, d.item.x * W, d.item.y * H, W, H, t, tm.lampGlow);
+        } else {
+          const p = state.partners[d.idx];
+          const ax = d.actor.x * W;
+          const ay = d.actor.y * H;
+          drawChibiAvatar(ctx, ax, ay, avScale, p, d.actor.anim, d.idx === 0 ? 1 : -1, t);
+
+          ctx.save();
+          ctx.font = '700 10px Nunito, sans-serif';
+          const tw = ctx.measureText(p.name).width;
+          ctx.fillStyle = d.idx === state.activePartner ? 'rgba(229,122,144,0.9)' : 'rgba(255,255,255,0.88)';
+          ctx.beginPath();
+          ctx.roundRect(ax - tw / 2 - 7, ay + 6, tw + 14, 15, 8);
+          ctx.fill();
+          ctx.fillStyle = d.idx === state.activePartner ? '#FFFFFF' : '#59433C';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.name, ax, ay + 16.5);
+          ctx.restore();
+
+          if (d.actor.bubbleT > 0 && d.actor.bubble) {
+            ctx.save();
+            ctx.font = '700 11px Nunito, sans-serif';
+            const bw = ctx.measureText(d.actor.bubble).width + 18;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.shadowColor = 'rgba(130,88,76,0.16)';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.roundRect(ax - bw / 2, ay - 86 * avScale, bw, 24, 12);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#59433C';
+            ctx.textAlign = 'center';
+            ctx.fillText(d.actor.bubble, ax, ay - 70 * avScale);
+            ctx.restore();
+          }
+        }
+      });
+
+      // 6. Hidden Unopened Surprises
+      const waitingForMe = state.gifts.filter(g => !g.opened && g.fromIdx !== state.activePartner);
+      waitingForMe.forEach((g, idx) => {
+        const spot = HIDING_SPOTS.find(s => s.id === g.spotId) || HIDING_SPOTS[0];
+        const gx = spot.x * W + (idx % 2 === 0 ? 0 : 14);
+        const gy = spot.y * H + Math.sin(t * 4 + idx) * 3;
+        ctx.save();
+        const aura = ctx.createRadialGradient(gx, gy, 2, gx, gy, 20);
+        aura.addColorStop(0, 'rgba(255, 224, 120, 0.85)');
+        aura.addColorStop(1, 'rgba(255, 224, 120, 0)');
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(gx, gy, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🎁', gx, gy);
+        ctx.restore();
+      });
+
+      // 7. Ambient Tint
+      ctx.fillStyle = tm.tint;
+      ctx.fillRect(0, 0, W, H);
+
+      // 8. Weather Effects
+      if (wt.id === 'fireflies') {
+        weatherParticles.forEach(wpItem => {
+          const fx = ((wpItem.x + Math.sin(t * 0.5 + wpItem.phase) * 0.04) % 1) * W;
+          const fy = ((wpItem.y + Math.cos(t * 0.4 + wpItem.phase) * 0.03) % 1) * H;
+          const alpha = 0.25 + 0.65 * Math.abs(Math.sin(t * 2 + wpItem.phase));
+          ctx.fillStyle = `rgba(255, 238, 150, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(fx, fy, 2.3 * wpItem.s, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else if (wt.id === 'rain') {
+        ctx.strokeStyle = 'rgba(145, 188, 232, 0.45)';
+        ctx.lineWidth = 1.4;
+        weatherParticles.forEach(wpItem => {
+          const rx = ((wpItem.x * W + t * 25) % W);
+          const ry = ((wpItem.y * H + t * 180 * wpItem.s) % H);
+          ctx.beginPath();
+          ctx.moveTo(rx, ry);
+          ctx.lineTo(rx - 4, ry + 12);
+          ctx.stroke();
+        });
+      } else if (wt.id === 'snow') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        weatherParticles.forEach(wpItem => {
+          const sx = ((wpItem.x * W + Math.sin(t + wpItem.phase) * 14 + W) % W);
+          const sy = ((wpItem.y * H + t * 28 * wpItem.s) % H);
+          ctx.beginPath();
+          ctx.arc(sx, sy, 2.2 * wpItem.s, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // 9. Floating Heart Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx * 0.016;
+        pt.y += pt.vy * 0.016;
+        pt.life -= 0.015;
+        if (pt.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, pt.life);
+        ctx.fillStyle = pt.color;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(pt.emoji, pt.x * W, pt.y * H);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    // ==================== GARDEN CANVAS ====================
+    function renderGardenCanvas(t) {
+      const canvas = document.getElementById('garden-canvas');
+      if (!canvas || currentTab !== 'garden') return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 10 || rect.height < 10) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+
+      const tm = TIME_MODES[state.home.timeIdx % TIME_MODES.length];
+      const sg = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+      sg.addColorStop(0, tm.skyTop);
+      sg.addColorStop(1, tm.skyBot);
+      ctx.fillStyle = sg;
+      ctx.fillRect(0, 0, W, H * 0.55);
+
+      ctx.fillStyle = '#B7DFBF';
+      ctx.beginPath();
+      ctx.ellipse(W * 0.25, H * 0.62, W * 0.5, 45, 0, 0, Math.PI * 2);
+      ctx.ellipse(W * 0.8, H * 0.62, W * 0.45, 40, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#C9E8CC';
+      ctx.fillRect(0, H * 0.52, W, H * 0.48);
+
+      ctx.fillStyle = '#FFFDFB';
+      for (let fx = 10; fx < W; fx += 24) {
+        ctx.beginPath();
+        ctx.roundRect(fx, H * 0.44, 12, 34, [6, 6, 0, 0]);
+        ctx.fill();
+      }
+      ctx.fillRect(0, H * 0.52, W, 5);
+      ctx.fillRect(0, H * 0.62, W, 5);
+
+      const startX = W * 0.14;
+      const stepX = (W * 0.72) / 5;
+      state.garden.forEach((plot, idx) => {
+        const px = startX + idx * stepX;
+        const py = H * 0.84;
+        ctx.fillStyle = '#B98D6C';
+        ctx.beginPath();
+        ctx.ellipse(px, py, 20, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        if (plot.seedId) {
+          const seed = SEED_CATALOG.find(s => s.id === plot.seedId);
+          const sway = Math.sin(t * 2.5 + idx) * 2;
+          ctx.font = plot.stage >= 3 ? '22px sans-serif' : plot.stage === 2 ? '18px sans-serif' : '15px sans-serif';
+          ctx.textAlign = 'center';
+          const icon = plot.stage === 0 ? '🌰' : plot.stage === 1 ? '🌱' : plot.stage === 2 ? '🌿' : (seed ? seed.emoji : '🌸');
+          ctx.fillText(icon, px + sway, py - 8);
+        }
+      });
+
+      drawChibiAvatar(ctx, W * 0.24, H * 0.72, 0.82, state.partners[0], 'idle', 1, t);
+      drawChibiAvatar(ctx, W * 0.76, H * 0.72, 0.82, state.partners[1], 'wave', -1, t);
+
+      ctx.restore();
+    }
+
+    // ==================== ONBOARDING PREVIEW CANVAS ====================
+    function renderPreviewCanvas(t) {
+      const modal = document.getElementById('onboarding-modal');
+      if (!modal || modal.classList.contains('hidden')) return;
+      const canvas = document.getElementById('preview-canvas');
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width < 10) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(W / 2, H * 0.8, W * 0.38, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#E57A90';
+      ctx.font = '18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('♥', W / 2, H * 0.34 + Math.sin(t * 3) * 4);
+
+      drawChibiAvatar(ctx, W * 0.35, H * 0.78, 1.15, state.partners[0], editingPartnerIdx === 0 ? 'wave' : 'idle', 1, t);
+      drawChibiAvatar(ctx, W * 0.65, H * 0.78, 1.15, state.partners[1], editingPartnerIdx === 1 ? 'wave' : 'idle', -1, t);
+
+      ctx.restore();
+    }
+
+    // ==================== MAIN ANIMATION LOOP ====================
+    let rafId = null;
+    function tick(now) {
+      const t = now * 0.001;
+      renderHomeCanvas(t);
+      renderGardenCanvas(t);
+      renderPreviewCanvas(t);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // ==================== HOME INTERACTIONS & CANVAS EVENTS ====================
+    function triggerCoupleAction(action) {
+      AudioEngine.playChime('heart'); if (window.OurWorldAndroid && window.OurWorldAndroid.haptic) { window.OurWorldAndroid.haptic(); }
+      const midX = 0.5;
+      const midY = 0.72;
+
+      if (action === 'hug') {
+        homeActors[0].tx = midX - 0.055; homeActors[0].ty = midY;
+        homeActors[1].tx = midX + 0.055; homeActors[1].ty = midY;
+        homeActors[0].anim = 'hug'; homeActors[1].anim = 'hug';
+        homeActors[0].bubble = 'Missed you so much! 🤗'; homeActors[0].bubbleT = 3.2;
+        homeActors[1].bubble = 'Best hug ever ♥'; homeActors[1].bubbleT = 3.2;
+        completeChallenge('ch_hug');
+      } else if (action === 'wave') {
+        homeActors[state.activePartner].anim = 'wave';
+        homeActors[1 - state.activePartner].anim = 'wave';
+        homeActors[state.activePartner].bubble = 'Hey love! 👋'; homeActors[state.activePartner].bubbleT = 2.8;
+        homeActors[1 - state.activePartner].bubble = 'Hi sweetheart! ✨'; homeActors[1 - state.activePartner].bubbleT = 2.8;
+      } else if (action === 'dance') {
+        homeActors[0].tx = midX - 0.09; homeActors[0].ty = midY;
+        homeActors[1].tx = midX + 0.09; homeActors[1].ty = midY;
+        homeActors[0].anim = 'dance'; homeActors[1].anim = 'dance';
+        homeActors[0].bubble = 'Slow dance? 🎶'; homeActors[0].bubbleT = 3.2;
+        homeActors[1].bubble = 'Always! 💃'; homeActors[1].bubbleT = 3.2;
+      } else if (action === 'hands') {
+        homeActors[0].tx = midX - 0.065; homeActors[0].ty = midY;
+        homeActors[1].tx = midX + 0.065; homeActors[1].ty = midY;
+        homeActors[0].anim = 'hands'; homeActors[1].anim = 'hands';
+        homeActors[0].bubble = 'Right here with you 🤝'; homeActors[0].bubbleT = 3.2;
+      } else if (action === 'kiss') {
+        homeActors[state.activePartner].bubble = `Love you, ${state.partners[1 - state.activePartner].name}! 💌`;
+        homeActors[state.activePartner].bubbleT = 3.2;
+      }
+
+      coupleAnimTimer = 3.4;
+      spawnHearts(midX, midY - 0.08, 10);
+      state.hearts += 5;
+      state.stats.interactions += 1;
+      saveState();
+      renderHeaderAndBadges();
+    }
+
+    function setupHomeCanvasInput() {
+      const canvas = document.getElementById('home-canvas');
+
+      function getNormPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: Math.max(0.08, Math.min(0.92, (clientX - rect.left) / rect.width)),
+          y: Math.max(0.12, Math.min(0.90, (clientY - rect.top) / rect.height))
+        };
+      }
+
+      canvas.addEventListener('pointerdown', (e) => {
+        const pos = getNormPos(e);
+
+        if (!decorateMode) {
+          const waiting = state.gifts.filter(g => !g.opened && g.fromIdx !== state.activePartner);
+          for (const g of waiting) {
+            const spot = HIDING_SPOTS.find(s => s.id === g.spotId) || HIDING_SPOTS[0];
+            if (Math.hypot(pos.x - spot.x, pos.y - spot.y) < 0.11) {
+              openSurpriseModal(g.id);
+              return;
+            }
+          }
+        }
+
+        if (decorateMode) {
+          let closest = null;
+          let bestD = 0.13;
+          state.home.placed.forEach(item => {
+            const d = Math.hypot(pos.x - item.x, pos.y - item.y);
+            if (d < bestD) { bestD = d; closest = item; }
+          });
+          if (closest) {
+            draggingItem = closest;
+            return;
+          }
+        }
+
+        const targetY = Math.max(0.60, Math.min(0.88, pos.y));
+        homeActors[state.activePartner].tx = pos.x;
+        homeActors[state.activePartner].ty = targetY;
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
+        if (decorateMode && draggingItem) {
+          const pos = getNormPos(e);
+          const def = FURNITURE_CATALOG.find(f => f.id === draggingItem.id);
+          draggingItem.x = pos.x;
+          draggingItem.y = def && def.wall
+            ? Math.max(0.10, Math.min(0.45, pos.y))
+            : Math.max(0.48, Math.min(0.86, pos.y));
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (draggingItem) {
+          draggingItem = null;
+          saveState();
+          showToast('Room layout synced!');
+        }
+      });
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderHeaderAndBadges() {
+      const p1 = state.partners[0].name;
+      const p2 = state.partners[1].name;
+      const me = state.partners[state.activePartner].name;
+      const other = state.partners[1 - state.activePartner].name;
+
+      document.getElementById('header-couple-names').textContent = `${p1} & ${p2}`;
+      document.getElementById('header-days-badge').textContent = `Day ${getDaysTogether()}`;
+      document.getElementById('sync-status-text').textContent = `Synced live · ${other} is home`;
+      document.getElementById('currency-hearts').textContent = state.hearts;
+      document.getElementById('active-partner-label').textContent = me;
+
+      document.querySelectorAll('.partner-other-name').forEach(el => { el.textContent = other; });
+
+      const tm = TIME_MODES[state.home.timeIdx % TIME_MODES.length];
+      const wt = WEATHER_MODES[state.home.weatherIdx % WEATHER_MODES.length];
+      document.getElementById('time-emoji').textContent = tm.emoji;
+      document.getElementById('time-label').textContent = tm.label;
+      document.getElementById('weather-emoji').textContent = wt.emoji;
+      document.getElementById('weather-label').textContent = wt.label;
+
+      const waiting = state.gifts.filter(g => !g.opened && g.fromIdx !== state.activePartner);
+      const pill = document.getElementById('btn-surprise-pill');
+      const dot = document.getElementById('nav-gift-dot');
+      if (waiting.length > 0) {
+        pill.classList.remove('hidden');
+        document.getElementById('surprise-pill-text').textContent = `${waiting.length} surprise${waiting.length > 1 ? 's' : ''} hidden!`;
+        dot.classList.remove('hidden');
+      } else {
+        pill.classList.add('hidden');
+        dot.classList.add('hidden');
+      }
+    }
+
+    function renderDecorateDrawer() {
+      const grid = document.getElementById('decorate-items-grid');
+      grid.innerHTML = '';
+
+      document.querySelectorAll('.dtab-btn').forEach(b => {
+        const active = b.dataset.dtab === decorateSubTab;
+        b.className = `dtab-btn px-2.5 py-1 rounded-full text-[11px] font-extrabold ${active ? 'bg-[#FDE9EE] text-[#D8657E]' : 'bg-[#FFF2EA] text-[#8A6F66]'}`;
+      });
+
+      if (decorateSubTab === 'furniture') {
+        FURNITURE_CATALOG.forEach(item => {
+          const owned = state.unlocked.furniture.includes(item.id);
+          const placedIdx = state.home.placed.findIndex(p => p.id === item.id);
+          const btn = document.createElement('button');
+          btn.className = `p-2 rounded-2xl border text-center transition ${placedIdx >= 0 ? 'bg-[#FDE9EE] border-[#F29EB2]' : owned ? 'bg-[#FFF8F3] border-[#F2DFD5]' : 'bg-[#F5F2F0] border-[#E7DFDA] opacity-75'}`;
+          btn.innerHTML = `
+            <div class="text-lg leading-none mb-1">${item.emoji}</div>
+            <div class="text-[10px] font-extrabold text-[#59433C] truncate">${item.name}</div>
+            <div class="text-[9px] font-bold ${placedIdx >= 0 ? 'text-[#D8657E]' : owned ? 'text-[#6FA684]' : 'text-[#A0867D]'}">
+              ${placedIdx >= 0 ? 'Placed ✓' : owned ? 'Place +' : `🔒 ${item.price} ♥`}
+            </div>
+          `;
+          btn.addEventListener('click', () => {
+            if (!owned) {
+              if (state.hearts >= item.price) {
+                state.hearts -= item.price;
+                state.unlocked.furniture.push(item.id);
+                state.stats.unlocks += 1;
+                state.home.placed.push({ id: item.id, x: item.defX, y: item.defY });
+                AudioEngine.playChime('gift');
+                showToast(`Unlocked & placed ${item.name}!`);
+              } else {
+                showToast(`Need ${item.price} ♥ (complete challenges or garden!)`);
+                return;
+              }
+            } else if (placedIdx >= 0) {
+              state.home.placed.splice(placedIdx, 1);
+              showToast(`Stored ${item.name}`);
+            } else {
+              state.home.placed.push({ id: item.id, x: item.defX, y: item.defY });
+              AudioEngine.playChime('sparkle');
+              showToast(`Placed ${item.name}! Drag to move.`);
+            }
+            saveState();
+            renderHeaderAndBadges();
+            renderDecorateDrawer();
+          });
+          grid.appendChild(btn);
+        });
+      } else if (decorateSubTab === 'wallpaper') {
+        WALLPAPERS.forEach(wp => {
+          const owned = state.unlocked.wallpaper.includes(wp.id);
+          const active = state.home.wallpaper === wp.id;
+          const btn = document.createElement('button');
+          btn.className = `p-2 rounded-2xl border text-center ${active ? 'border-[#E57A90] ring-2 ring-[#F9CBD6]' : 'border-[#F2DFD5]'}`;
+          btn.innerHTML = `
+            <div class="h-7 rounded-xl mb-1 border border-white" style="background:linear-gradient(${wp.top}, ${wp.bot})"></div>
+            <div class="text-[10px] font-extrabold text-[#59433C] truncate">${wp.name}</div>
+            <div class="text-[9px] font-bold text-[#9C8178]">${active ? 'Active ✓' : owned ? 'Apply' : `🔒 ${wp.price} ♥`}</div>
+          `;
+          btn.addEventListener('click', () => {
+            if (!owned) {
+              if (state.hearts >= wp.price) {
+                state.hearts -= wp.price;
+                state.unlocked.wallpaper.push(wp.id);
+                state.stats.unlocks += 1;
+              } else { showToast(`Need ${wp.price} ♥`); return; }
+            }
+            state.home.wallpaper = wp.id;
+            AudioEngine.playChime('sparkle');
+            saveState();
+            renderHeaderAndBadges();
+            renderDecorateDrawer();
+          });
+          grid.appendChild(btn);
+        });
+      } else if (decorateSubTab === 'floor') {
+        FLOORS.forEach(fl => {
+          const owned = state.unlocked.floor.includes(fl.id);
+          const active = state.home.floor === fl.id;
+          const btn = document.createElement('button');
+          btn.className = `p-2 rounded-2xl border text-center ${active ? 'border-[#E57A90] ring-2 ring-[#F9CBD6]' : 'border-[#F2DFD5]'}`;
+          btn.innerHTML = `
+            <div class="h-7 rounded-xl mb-1 border border-white" style="background:${fl.base}"></div>
+            <div class="text-[10px] font-extrabold text-[#59433C] truncate">${fl.name}</div>
+            <div class="text-[9px] font-bold text-[#9C8178]">${active ? 'Active ✓' : owned ? 'Apply' : `🔒 ${fl.price} ♥`}</div>
+          `;
+          btn.addEventListener('click', () => {
+            if (!owned) {
+              if (state.hearts >= fl.price) {
+                state.hearts -= fl.price;
+                state.unlocked.floor.push(fl.id);
+                state.stats.unlocks += 1;
+              } else { showToast(`Need ${fl.price} ♥`); return; }
+            }
+            state.home.floor = fl.id;
+            AudioEngine.playChime('sparkle');
+            saveState();
+            renderHeaderAndBadges();
+            renderDecorateDrawer();
+          });
+          grid.appendChild(btn);
+        });
+      } else if (decorateSubTab === 'lighting') {
+        TIME_MODES.forEach((tm, idx) => {
+          const active = state.home.timeIdx === idx;
+          const btn = document.createElement('button');
+          btn.className = `p-2 rounded-2xl border text-center ${active ? 'bg-[#FDE9EE] border-[#E57A90]' : 'bg-[#FFF8F3] border-[#F2DFD5]'}`;
+          btn.innerHTML = `<div class="text-lg">${tm.emoji}</div><div class="text-[10px] font-extrabold">${tm.label}</div>`;
+          btn.addEventListener('click', () => {
+            state.home.timeIdx = idx;
+            saveState();
+            renderHeaderAndBadges();
+            renderDecorateDrawer();
+          });
+          grid.appendChild(btn);
+        });
+        WEATHER_MODES.forEach((wt, idx) => {
+          const active = state.home.weatherIdx === idx;
+          const btn = document.createElement('button');
+          btn.className = `p-2 rounded-2xl border text-center ${active ? 'bg-[#EFEAFE] border-[#9A85DB]' : 'bg-[#FFF8F3] border-[#F2DFD5]'}`;
+          btn.innerHTML = `<div class="text-lg">${wt.emoji}</div><div class="text-[10px] font-extrabold">${wt.label}</div>`;
+          btn.addEventListener('click', () => {
+            state.home.weatherIdx = idx;
+            saveState();
+            renderHeaderAndBadges();
+            renderDecorateDrawer();
+          });
+          grid.appendChild(btn);
+        });
+      }
+    }
+
+    function renderGarden() {
+      document.getElementById('garden-bloom-count').textContent = `${state.stats.blooms} Harvested`;
+      const grid = document.getElementById('garden-plots-grid');
+      grid.innerHTML = '';
+
+      state.garden.forEach((plot, idx) => {
+        const card = document.createElement('div');
+        card.className = 'pastel-card p-3 flex flex-col justify-between gap-2';
+        if (!plot.seedId) {
+          card.innerHTML = `
+            <div class="text-center py-2">
+              <div class="text-2xl mb-1 opacity-60">🪴</div>
+              <div class="text-xs font-bold text-[#9C8178]">Empty Soil Plot</div>
+            </div>
+            <button class="w-full btn-soft py-1.5 rounded-xl text-xs font-extrabold text-[#5A926F]">+ Plant Seed</button>
+          `;
+          card.querySelector('button').addEventListener('click', () => openSeedPicker(idx));
+        } else {
+          const seed = SEED_CATALOG.find(s => s.id === plot.seedId) || SEED_CATALOG[0];
+          const stageNames = ['Planted Seed', 'Tiny Sprout', 'Budding', 'Full Bloom!'];
+          const stageIcons = ['🌰', '🌱', '🌿', seed.emoji];
+          const pct = Math.min(100, Math.round((plot.stage / 3) * 100));
+          const isReady = plot.stage >= 3;
+          card.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 rounded-2xl bg-[#EEF8F1] flex items-center justify-center text-2xl shrink-0">${stageIcons[plot.stage]}</div>
+              <div class="min-w-0">
+                <div class="text-xs font-extrabold text-[#59433C] truncate">${seed.name}</div>
+                <div class="text-[10px] font-bold text-[#6FA684]">${stageNames[plot.stage]}</div>
+              </div>
+            </div>
+            <div class="w-full h-1.5 bg-[#EDF2EE] rounded-full overflow-hidden">
+              <div class="h-full bg-[#73BA8C] rounded-full transition-all" style="width:${pct}%"></div>
+            </div>
+            <button class="w-full py-1.5 rounded-xl text-xs font-extrabold ${isReady ? 'btn-rose' : 'bg-[#E5F4FD] text-[#3B82B8] border border-[#C6E4F7]'}">
+              ${isReady ? `Harvest +${seed.reward} ♥` : '💧 Water Together'}
+            </button>
+          `;
+          card.querySelector('button').addEventListener('click', () => {
+            if (isReady) {
+              state.hearts += seed.reward;
+              state.stats.blooms += 1;
+              plot.seedId = null;
+              plot.stage = 0;
+              plot.wateredBy = [];
+              AudioEngine.playChime('gift');
+              showToast(`Harvested ${seed.name}! +${seed.reward} ♥`);
+              if (state.stats.blooms === 4) {
+                state.memories.unshift({
+                  id: 'm_' + Date.now(),
+                  sticker: seed.emoji,
+                  title: `Harvested a blooming ${seed.name} in our shared garden`,
+                  date: 'Today',
+                  author: `${state.partners[0].name} & ${state.partners[1].name}`
+                });
+              }
+            } else {
+              plot.stage = Math.min(3, plot.stage + 1);
+              const me = state.partners[state.activePartner].name;
+              if (!plot.wateredBy.includes(me)) plot.wateredBy.push(me);
+              state.hearts += 5;
+              AudioEngine.playChime('water');
+              completeChallenge('ch_water');
+              showToast(`Watered ${seed.name}! It grew!`);
+            }
+            saveState();
+            renderHeaderAndBadges();
+            renderGarden();
+            renderActivities();
+          });
+        }
+        grid.appendChild(card);
+      });
+
+      const pouch = document.getElementById('seed-pouch-list');
+      pouch.innerHTML = '';
+      SEED_CATALOG.forEach(s => {
+        const owned = state.unlocked.seed.includes(s.id);
+        const div = document.createElement('div');
+        div.className = `p-2 rounded-xl border text-center ${owned ? 'bg-[#F4FBF6] border-[#D5ECD9]' : 'bg-[#F6F3F1] border-[#EAE2DC] opacity-75'}`;
+        div.innerHTML = `
+          <div class="text-lg">${s.emoji}</div>
+          <div class="text-[10px] font-extrabold text-[#59433C] truncate">${s.name}</div>
+          <div class="text-[9px] font-bold text-[#7A635B]">${owned ? `+${s.reward} ♥` : `🔒 ${s.price} ♥`}</div>
+        `;
+        if (!owned) {
+          div.style.cursor = 'pointer';
+          div.addEventListener('click', () => {
+            if (state.hearts >= s.price) {
+              state.hearts -= s.price;
+              state.unlocked.seed.push(s.id);
+              state.stats.unlocks += 1;
+              AudioEngine.playChime('gift');
+              showToast(`Unlocked ${s.name} seeds!`);
+              saveState();
+              renderHeaderAndBadges();
+              renderGarden();
+            } else {
+              showToast(`Need ${s.price} ♥ to unlock ${s.name}`);
+            }
+          });
+        }
+        pouch.appendChild(div);
+      });
+    }
+
+    function openSeedPicker(plotIdx) {
+      plantingPlotIdx = plotIdx;
+      const box = document.getElementById('seed-modal-options');
+      box.innerHTML = '';
+      SEED_CATALOG.filter(s => state.unlocked.seed.includes(s.id)).forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'p-2.5 rounded-2xl bg-[#F5FBF7] border border-[#D3EAD8] flex items-center gap-2 hover:bg-[#E7F6EC]';
+        btn.innerHTML = `<span class="text-xl">${s.emoji}</span><div class="text-left"><div class="text-xs font-extrabold text-[#59433C]">${s.name}</div><div class="text-[10px] font-bold text-[#6FA684]">Yields ${s.reward} ♥</div></div>`;
+        btn.addEventListener('click', () => {
+          state.garden[plantingPlotIdx] = { seedId: s.id, stage: 1, wateredBy: [state.partners[state.activePartner].name] };
+          AudioEngine.playChime('water');
+          document.getElementById('seed-modal').classList.add('hidden');
+          showToast(`Planted ${s.name}!`);
+          saveState();
+          renderGarden();
+        });
+        box.appendChild(btn);
+      });
+      document.getElementById('seed-modal').classList.remove('hidden');
+    }
+
+    function renderActivities() {
+      document.querySelectorAll('.atab-btn').forEach(b => {
+        const active = b.dataset.atab === activitySubTab;
+        b.className = `atab-btn py-1.5 rounded-xl text-xs font-extrabold ${active ? 'bg-white text-[#E06A83] shadow-sm' : 'text-[#8A6F66]'}`;
+      });
+      document.getElementById('activities-daily').classList.toggle('hidden', activitySubTab !== 'daily');
+      document.getElementById('activities-shop').classList.toggle('hidden', activitySubTab !== 'shop');
+      document.getElementById('activities-badges').classList.toggle('hidden', activitySubTab !== 'badges');
+
+      const streakRow = document.getElementById('daily-streak-row');
+      streakRow.innerHTML = '';
+      const rewards = [15, 20, 25, 35, 40, 50, 80];
+      rewards.forEach((rw, idx) => {
+        const dayNum = idx + 1;
+        const claimed = dayNum <= state.dailyStreak;
+        const isNext = dayNum === state.dailyStreak + 1 && !state.dailyClaimed;
+        const cell = document.createElement('div');
+        cell.className = `py-1.5 rounded-xl border text-[10px] font-extrabold ${claimed ? 'bg-[#FDE9EE] border-[#F6BCC9] text-[#D8657E]' : isNext ? 'bg-[#FFF5D6] border-[#F3CE6E] text-[#9A6E1C]' : 'bg-white border-[#F3E5DC] text-[#A99086]'}`;
+        cell.innerHTML = `<div>D${dayNum}</div><div class="text-[11px]">${claimed ? '✓' : rw + '♥'}</div>`;
+        streakRow.appendChild(cell);
+      });
+      const claimBtn = document.getElementById('btn-claim-daily');
+      claimBtn.disabled = state.dailyClaimed;
+      claimBtn.textContent = state.dailyClaimed ? 'Claimed ✓' : `Claim +${rewards[Math.min(6, state.dailyStreak)]} ♥`;
+      claimBtn.classList.toggle('opacity-50', state.dailyClaimed);
+      document.getElementById('streak-subtitle').textContent = `${state.dailyStreak}-day couple streak · Keep coming home!`;
+
+      const ansBox = document.getElementById('daily-prompt-answers');
+      ansBox.innerHTML = '';
+      state.promptAnswers.forEach(a => {
+        const p = state.partners[a.partnerIdx] || state.partners[0];
+        const row = document.createElement('div');
+        row.className = 'p-2.5 rounded-xl bg-[#FFF6F0] border border-[#F5E3D8] text-xs';
+        row.innerHTML = `<span class="font-extrabold text-[#D8657E]">${escapeHtml(p.name)}:</span> <span class="text-[#59433C]">${escapeHtml(a.text)}</span>`;
+        ansBox.appendChild(row);
+      });
+
+      const chList = document.getElementById('challenges-list');
+      chList.innerHTML = '';
+      const doneCount = state.challenges.filter(c => c.done).length;
+      document.getElementById('challenges-progress').textContent = `${doneCount}/${state.challenges.length} done`;
+      state.challenges.forEach(ch => {
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-2xl border flex items-center justify-between gap-2 ${ch.done ? 'bg-[#F1FAF4] border-[#CDE7D5]' : 'bg-[#FFFBF8] border-[#F3E4DA]'}`;
+        div.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ${ch.done ? 'bg-[#6FA684] text-white' : 'bg-[#F7E5DC] text-[#A2857B]'}">${ch.done ? '✓' : '·'}</span>
+            <span class="text-xs font-bold ${ch.done ? 'line-through text-[#85A690]' : 'text-[#59433C]'}">${ch.title}</span>
+          </div>
+          <span class="text-[11px] font-extrabold text-[#E06A83] shrink-0">+${ch.reward} ♥</span>
+        `;
+        chList.appendChild(div);
+      });
+
+      const shopGrid = document.getElementById('shop-grid');
+      shopGrid.innerHTML = '';
+      const shopItems = [
+        ...FURNITURE_CATALOG.filter(f => f.price > 0).map(f => ({ cat: 'furniture', id: f.id, name: f.name, emoji: f.emoji, price: f.price, tag: 'Home' })),
+        ...OUTFITS.filter(o => o.price > 0).map(o => ({ cat: 'outfit', id: o.id, name: o.label, emoji: '👕', price: o.price, tag: 'Outfit' })),
+        ...WALLPAPERS.filter(w => w.price > 0).map(w => ({ cat: 'wallpaper', id: w.id, name: w.name, emoji: '🎨', price: w.price, tag: 'Wall' })),
+        ...SEED_CATALOG.filter(s => s.price > 0).map(s => ({ cat: 'seed', id: s.id, name: s.name, emoji: s.emoji, price: s.price, tag: 'Garden' }))
+      ];
+      shopItems.forEach(item => {
+        const owned = state.unlocked[item.cat].includes(item.id);
+        const card = document.createElement('div');
+        card.className = 'pastel-card p-3 flex flex-col items-center text-center gap-1.5';
+        card.innerHTML = `
+          <span class="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#FFF2EA] text-[#9E7D72]">${item.tag}</span>
+          <div class="text-2xl">${item.emoji}</div>
+          <div class="text-xs font-extrabold text-[#59433C]">${item.name}</div>
+          <button class="w-full py-1.5 rounded-xl text-[11px] font-extrabold ${owned ? 'bg-[#EAF6EE] text-[#5B946F]' : 'btn-rose'}">
+            ${owned ? 'Owned ✓' : `Unlock · ${item.price} ♥`}
+          </button>
+        `;
+        card.querySelector('button').addEventListener('click', () => {
+          if (owned) return;
+          if (state.hearts >= item.price) {
+            state.hearts -= item.price;
+            state.unlocked[item.cat].push(item.id);
+            state.stats.unlocks += 1;
+            AudioEngine.playChime('gift');
+            showToast(`Unlocked ${item.name}!`);
+            saveState();
+            renderHeaderAndBadges();
+            renderActivities();
+            renderDecorateDrawer();
+          } else {
+            showToast(`Need ${item.price} ♥`);
+          }
+        });
+        shopGrid.appendChild(card);
+      });
+
+      const achList = document.getElementById('achievements-list');
+      achList.innerHTML = '';
+      ACHIEVEMENTS_DEF.forEach(a => {
+        const val = Math.min(a.target, state.stats[a.key] || 0);
+        const done = val >= a.target;
+        const pct = Math.round((val / a.target) * 100);
+        const card = document.createElement('div');
+        card.className = `pastel-card p-3 flex items-center gap-3 ${done ? 'bg-[#FFFDF5] border-[#F4DF9F]' : ''}`;
+        card.innerHTML = `
+          <div class="w-11 h-11 rounded-2xl ${done ? 'bg-[#FFF1C7]' : 'bg-[#F8EFE9]'} flex items-center justify-center text-2xl shrink-0">${a.emoji}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-[#59433C]">${a.title}</span>
+              <span class="text-[10px] font-extrabold ${done ? 'text-[#C68B22]' : 'text-[#9C8178]'}">${done ? 'Unlocked ★' : `${val}/${a.target}`}</span>
+            </div>
+            <p class="text-[11px] text-[#8A6F66] mb-1.5">${a.desc}</p>
+            <div class="w-full h-1.5 bg-[#F2E7E0] rounded-full overflow-hidden">
+              <div class="h-full ${done ? 'bg-[#EBB649]' : 'bg-[#E57A90]'} rounded-full" style="width:${pct}%"></div>
+            </div>
+          </div>
+        `;
+        achList.appendChild(card);
+      });
+    }
+
+    function renderGifts() {
+      const typePicker = document.getElementById('gift-type-picker');
+      typePicker.innerHTML = '';
+      GIFT_TYPES.forEach(gt => {
+        const active = selectedGiftType === gt.id;
+        const btn = document.createElement('button');
+        btn.className = `p-2 rounded-2xl border text-center transition ${active ? 'bg-[#FDE9EE] border-[#E57A90]' : 'bg-[#FFF8F3] border-[#F2DFD5]'}`;
+        btn.innerHTML = `<div class="text-lg">${gt.emoji}</div><div class="text-[9px] font-extrabold text-[#59433C] truncate">${gt.name}</div>`;
+        btn.addEventListener('click', () => { selectedGiftType = gt.id; renderGifts(); });
+        typePicker.appendChild(btn);
+      });
+
+      const spotPicker = document.getElementById('gift-spot-picker');
+      spotPicker.innerHTML = '';
+      HIDING_SPOTS.forEach(sp => {
+        const active = selectedGiftSpot === sp.id;
+        const btn = document.createElement('button');
+        btn.className = `px-2.5 py-2 rounded-xl border text-[11px] font-bold text-left ${active ? 'bg-[#EFEAFE] border-[#9A85DB] text-[#5B4794]' : 'bg-[#FFF8F3] border-[#F2DFD5] text-[#7D635B]'}`;
+        btn.textContent = sp.label;
+        btn.addEventListener('click', () => { selectedGiftSpot = sp.id; renderGifts(); });
+        spotPicker.appendChild(btn);
+      });
+
+      document.getElementById('gifts-count-badge').textContent = `${state.gifts.length} surprises`;
+      const list = document.getElementById('gifts-history-list');
+      list.innerHTML = '';
+      state.gifts.forEach(g => {
+        const gt = GIFT_TYPES.find(x => x.id === g.typeId) || GIFT_TYPES[0];
+        const spot = HIDING_SPOTS.find(x => x.id === g.spotId) || HIDING_SPOTS[0];
+        const senderName = state.partners[g.fromIdx].name;
+        const isForMe = g.fromIdx !== state.activePartner;
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-2xl bg-[#FFF9F4] border border-[#F3E2D7] flex items-center justify-between gap-2.5';
+        card.innerHTML = `
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-white border border-[#F5E4DC] flex items-center justify-center text-xl shrink-0">${gt.emoji}</div>
+            <div class="min-w-0">
+              <div class="text-xs font-extrabold text-[#59433C] truncate">${gt.name} · from ${escapeHtml(senderName)}</div>
+              <div class="text-[10px] text-[#8A6F66] truncate">${g.opened ? 'Unwrapped & saved ♥' : `Hidden ${spot.label.toLowerCase()}`}</div>
+            </div>
+          </div>
+          <button class="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold shrink-0 ${!g.opened && isForMe ? 'btn-rose' : 'btn-soft'}">
+            ${!g.opened && isForMe ? 'Unwrap!' : g.opened ? 'Read' : 'Hidden'}
+          </button>
+        `;
+        card.querySelector('button').addEventListener('click', () => {
+          if (!g.opened && !isForMe) {
+            showToast(`Waiting for ${state.partners[1 - state.activePartner].name} to find it! Switch partner to test.`);
+            return;
+          }
+          openSurpriseModal(g.id);
+        });
+        list.appendChild(card);
+      });
+    }
+
+    function openSurpriseModal(giftId) {
+      const g = state.gifts.find(x => x.id === giftId);
+      if (!g) return;
+      const gt = GIFT_TYPES.find(x => x.id === g.typeId) || GIFT_TYPES[0];
+      const sender = state.partners[g.fromIdx].name;
+
+      document.getElementById('unwrap-emoji').textContent = gt.emoji;
+      document.getElementById('unwrap-from').textContent = `Surprise from ${sender}`;
+      document.getElementById('unwrap-title').textContent = gt.name;
+      document.getElementById('unwrap-note').textContent = g.note;
+
+      const wasUnopened = !g.opened;
+      if (wasUnopened) {
+        g.opened = true;
+        state.hearts += 15;
+        state.stats.surprises += 1;
+        completeChallenge('ch_gift');
+        state.memories.unshift({
+          id: 'm_' + Date.now(),
+          sticker: gt.emoji,
+          title: `Unwrapped ${gt.name} from ${sender}: "${g.note.slice(0, 48)}${g.note.length > 48 ? '...' : ''}"`,
+          date: 'Today',
+          author: sender
+        });
+        AudioEngine.playChime('gift');
+        saveState();
+        renderHeaderAndBadges();
+        renderGifts();
+        renderMemories();
+        renderActivities();
+      }
+      document.getElementById('btn-close-unwrap').textContent = wasUnopened ? 'Keep in Memories (+15 ♥)' : 'Close Note ♥';
+      document.getElementById('unwrap-modal').classList.remove('hidden');
+    }
+
+    function renderMemories() {
+      document.getElementById('mem-anniversary-text').textContent = formatDateShort(state.anniversary);
+      document.getElementById('mem-days-big').textContent = getDaysTogether();
+      document.getElementById('stat-hugs').textContent = state.stats.interactions;
+      document.getElementById('stat-notes').textContent = state.gifts.length;
+      document.getElementById('stat-blooms').textContent = state.stats.blooms;
+
+      const tl = document.getElementById('memories-timeline');
+      tl.innerHTML = '';
+      state.memories.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'pastel-card p-3.5 flex items-start gap-3';
+        card.innerHTML = `
+          <div class="w-11 h-11 rounded-2xl bg-[#FFF3EB] border border-[#F5DFD3] flex items-center justify-center text-2xl shrink-0">${m.sticker}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-[#59433C] leading-snug">${escapeHtml(m.title)}</p>
+            <div class="text-[10px] font-bold text-[#A0867D] mt-1">${m.date} · ${escapeHtml(m.author)}</div>
+          </div>
+        `;
+        tl.appendChild(card);
+      });
+    }
+
+    function renderOnboardingForm() {
+      const p = state.partners[editingPartnerIdx];
+      document.getElementById('edit-p1-btn').textContent = `Partner 1 (${state.partners[0].name})`;
+      document.getElementById('edit-p2-btn').textContent = `Partner 2 (${state.partners[1].name})`;
+      document.getElementById('edit-p1-btn').className = `py-1.5 rounded-xl text-xs font-extrabold ${editingPartnerIdx === 0 ? 'bg-white text-[#E06A83] shadow-sm' : 'text-[#8A6F66]'}`;
+      document.getElementById('edit-p2-btn').className = `py-1.5 rounded-xl text-xs font-extrabold ${editingPartnerIdx === 1 ? 'bg-white text-[#E06A83] shadow-sm' : 'text-[#8A6F66]'}`;
+
+      document.getElementById('avatar-name-input').value = p.name;
+      document.getElementById('anniversary-input').value = state.anniversary;
+      document.getElementById('pairing-code-input').value = state.pairingCode;
+
+      const skinBox = document.getElementById('skin-swatches');
+      skinBox.innerHTML = '';
+      SKIN_TONES.forEach(c => {
+        const b = document.createElement('button');
+        b.className = `w-7 h-7 rounded-full border-2 ${p.skin === c ? 'border-[#E57A90] scale-110' : 'border-white'}`;
+        b.style.background = c;
+        b.addEventListener('click', () => { p.skin = c; renderOnboardingForm(); });
+        skinBox.appendChild(b);
+      });
+
+      const hsBox = document.getElementById('hair-style-btns');
+      hsBox.innerHTML = '';
+      HAIR_STYLES.forEach(hs => {
+        const b = document.createElement('button');
+        b.className = `px-2 py-1 rounded-lg text-[10px] font-extrabold border ${p.hairStyle === hs.id ? 'bg-[#FDE9EE] border-[#E57A90] text-[#D8657E]' : 'bg-white border-[#EFE0D7] text-[#7D635B]'}`;
+        b.textContent = hs.label;
+        b.addEventListener('click', () => { p.hairStyle = hs.id; renderOnboardingForm(); });
+        hsBox.appendChild(b);
+      });
+
+      const hcBox = document.getElementById('hair-color-swatches');
+      hcBox.innerHTML = '';
+      HAIR_COLORS.forEach(c => {
+        const b = document.createElement('button');
+        b.className = `w-6 h-6 rounded-full border-2 ${p.hairColor === c ? 'border-[#E57A90] scale-110' : 'border-white'}`;
+        b.style.background = c;
+        b.addEventListener('click', () => { p.hairColor = c; renderOnboardingForm(); });
+        hcBox.appendChild(b);
+      });
+
+      const outBox = document.getElementById('outfit-btns');
+      outBox.innerHTML = '';
+      OUTFITS.filter(o => state.unlocked.outfit.includes(o.id)).forEach(o => {
+        const b = document.createElement('button');
+        b.className = `px-2 py-1 rounded-lg text-[10px] font-extrabold border ${p.outfit === o.id ? 'bg-[#FDE9EE] border-[#E57A90] text-[#D8657E]' : 'bg-white border-[#EFE0D7] text-[#7D635B]'}`;
+        b.textContent = o.label;
+        b.addEventListener('click', () => { p.outfit = o.id; renderOnboardingForm(); });
+        outBox.appendChild(b);
+      });
+
+      const accBox = document.getElementById('acc-btns');
+      accBox.innerHTML = '';
+      ACCESSORIES.forEach(a => {
+        const b = document.createElement('button');
+        b.className = `px-2 py-1 rounded-lg text-[10px] font-extrabold border ${p.acc === a.id ? 'bg-[#EFEAFE] border-[#9A85DB] text-[#6650A8]' : 'bg-white border-[#EFE0D7] text-[#7D635B]'}`;
+        b.textContent = a.label;
+        b.addEventListener('click', () => { p.acc = a.id; renderOnboardingForm(); });
+        accBox.appendChild(b);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      if (tab === 'garden') renderGarden();
+      if (tab === 'activities') renderActivities();
+      if (tab === 'gifts') renderGifts();
+      if (tab === 'memories') renderMemories();
+    }
+
+    function renderAll() {
+      renderHeaderAndBadges();
+      renderDecorateDrawer();
+      renderGarden();
+      renderActivities();
+      renderGifts();
+      renderMemories();
+      renderOnboardingForm();
+    }
+
+    // ==================== EVENT WIRING ====================
+    function wireEvents() {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.querySelectorAll('.couple-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => triggerCoupleAction(btn.dataset.action));
+      });
+
+      document.getElementById('btn-quick-note').addEventListener('click', () => switchTab('gifts'));
+
+      document.getElementById('btn-surprise-pill').addEventListener('click', () => {
+        const waiting = state.gifts.find(g => !g.opened && g.fromIdx !== state.activePartner);
+        if (waiting) openSurpriseModal(waiting.id);
+      });
+
+      document.getElementById('btn-cycle-time').addEventListener('click', () => {
+        state.home.timeIdx = (state.home.timeIdx + 1) % TIME_MODES.length;
+        saveState();
+        renderHeaderAndBadges();
+        renderDecorateDrawer();
+      });
+      document.getElementById('btn-cycle-weather').addEventListener('click', () => {
+        state.home.weatherIdx = (state.home.weatherIdx + 1) % WEATHER_MODES.length;
+        saveState();
+        renderHeaderAndBadges();
+        renderDecorateDrawer();
+      });
+
+      const toggleDecorate = (force) => {
+        decorateMode = typeof force === 'boolean' ? force : !decorateMode;
+        document.getElementById('home-interactions-bar').classList.toggle('hidden', decorateMode);
+        document.getElementById('home-decorate-drawer').classList.toggle('hidden', !decorateMode);
+        document.getElementById('decorate-hint').classList.toggle('hidden', !decorateMode);
+        if (decorateMode) renderDecorateDrawer();
+      };
+      document.getElementById('btn-toggle-decorate').addEventListener('click', () => toggleDecorate());
+      document.getElementById('btn-close-decorate').addEventListener('click', () => toggleDecorate(false));
+      document.querySelectorAll('.dtab-btn').forEach(b => {
+        b.addEventListener('click', () => { decorateSubTab = b.dataset.dtab; renderDecorateDrawer(); });
+      });
+
+      document.getElementById('btn-switch-partner').addEventListener('click', () => {
+        state.activePartner = 1 - state.activePartner;
+        saveState(false);
+        renderAll();
+        showToast(`Switched to ${state.partners[state.activePartner].name}'s device view`);
+      });
+
+      document.getElementById('btn-toggle-music').addEventListener('click', () => {
+        const on = AudioEngine.toggle();
+        const icon = document.getElementById('music-icon');
+        icon.setAttribute('data-lucide', on ? 'volume-2' : 'volume-x');
+        if (window.lucide) window.lucide.createIcons();
+        showToast(on ? 'Cozy music & chimes ON 🎵' : 'Sound muted');
+      });
+
+      document.getElementById('btn-water-all').addEventListener('click', () => {
+        let watered = 0;
+        state.garden.forEach(p => {
+          if (p.seedId && p.stage < 3) {
+            p.stage = Math.min(3, p.stage + 1);
+            watered++;
+          }
+        });
+        if (watered > 0) {
+          state.hearts += watered * 4;
+          AudioEngine.playChime('water');
+          completeChallenge('ch_water');
+          saveState();
+          renderHeaderAndBadges();
+          renderGarden();
+          renderActivities();
+          showToast(`Watered ${watered} plant${watered > 1 ? 's' : ''}! +${watered * 4} ♥`);
+        } else {
+          showToast('All planted beds are already in full bloom!');
+        }
+      });
+
+      document.querySelectorAll('.atab-btn').forEach(b => {
+        b.addEventListener('click', () => { activitySubTab = b.dataset.atab; renderActivities(); });
+      });
+
+      document.getElementById('btn-claim-daily').addEventListener('click', () => {
+        if (state.dailyClaimed) return;
+        const rewards = [15, 20, 25, 35, 40, 50, 80];
+        const amt = rewards[Math.min(6, state.dailyStreak)];
+        state.dailyClaimed = true;
+        state.dailyStreak = Math.min(7, state.dailyStreak + 1);
+        state.hearts += amt;
+        AudioEngine.playChime('gift');
+        saveState();
+        renderHeaderAndBadges();
+        renderActivities();
+        showToast(`Daily Gift claimed! +${amt} ♥`);
+      });
+
+      document.getElementById('btn-submit-prompt').addEventListener('click', () => {
+        const inp = document.getElementById('daily-prompt-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        state.promptAnswers.push({ partnerIdx: state.activePartner, text: txt });
+        inp.value = '';
+        completeChallenge('ch_prompt');
+        saveState();
+        renderHeaderAndBadges();
+        renderActivities();
+        showToast('Answer shared with your partner! 💭');
+      });
+
+      document.getElementById('btn-hide-surprise').addEventListener('click', () => {
+        const inp = document.getElementById('gift-note-input');
+        const note = inp.value.trim() || 'Left you a cozy little surprise in our home! Love you ♥';
+        state.gifts.unshift({
+          id: 'g_' + Date.now(),
+          fromIdx: state.activePartner,
+          typeId: selectedGiftType,
+          spotId: selectedGiftSpot,
+          note,
+          opened: false,
+          date: 'Just now'
+        });
+        inp.value = '';
+        state.stats.surprises += 1;
+        completeChallenge('ch_gift');
+        AudioEngine.playChime('gift');
+        saveState();
+        renderHeaderAndBadges();
+        renderGifts();
+        renderActivities();
+        showToast(`Surprise hidden! Switch to ${state.partners[1 - state.activePartner].name} to discover it 🎁`);
+      });
+
+      document.getElementById('btn-add-memory').addEventListener('click', () => {
+        const inp = document.getElementById('memory-title-input');
+        const txt = inp.value.trim();
+        if (!txt) { showToast('Write a sweet caption first!'); return; }
+        const sticker = document.getElementById('memory-sticker').value;
+        state.memories.unshift({
+          id: 'm_' + Date.now(),
+          sticker,
+          title: txt,
+          date: 'Today',
+          author: state.partners[state.activePartner].name
+        });
+        inp.value = '';
+        state.hearts += 10;
+        AudioEngine.playChime('sparkle');
+        saveState();
+        renderHeaderAndBadges();
+        renderMemories();
+        showToast('Memory pinned to scrapbook! +10 ♥');
+      });
+
+      document.getElementById('btn-close-unwrap').addEventListener('click', () => {
+        document.getElementById('unwrap-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-close-seed-modal').addEventListener('click', () => {
+        document.getElementById('seed-modal').classList.add('hidden');
+      });
+
+      document.getElementById('btn-open-avatars').addEventListener('click', () => {
+        renderOnboardingForm();
+        document.getElementById('onboarding-modal').classList.remove('hidden');
+      });
+      document.getElementById('edit-p1-btn').addEventListener('click', () => { editingPartnerIdx = 0; renderOnboardingForm(); });
+      document.getElementById('edit-p2-btn').addEventListener('click', () => { editingPartnerIdx = 1; renderOnboardingForm(); });
+      document.getElementById('avatar-name-input').addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val) state.partners[editingPartnerIdx].name = val;
+        document.getElementById('edit-p1-btn').textContent = `Partner 1 (${state.partners[0].name})`;
+        document.getElementById('edit-p2-btn').textContent = `Partner 2 (${state.partners[1].name})`;
+      });
+      document.getElementById('anniversary-input').addEventListener('change', (e) => {
+        if (e.target.value) state.anniversary = e.target.value;
+      });
+      document.getElementById('btn-regen-code').addEventListener('click', () => {
+        const words = ['HUG', 'LOVE', 'HOME', 'STAR', 'COZY'];
+        const num = Math.floor(1000 + Math.random() * 9000);
+        state.pairingCode = `OW-${num}-${words[Math.floor(Math.random() * words.length)]}`;
+        document.getElementById('pairing-code-input').value = state.pairingCode;
+      });
+      document.getElementById('btn-copy-code').addEventListener('click', () => {
+        const code = state.pairingCode;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).catch(() => {});
+        } else {
+          const inp = document.getElementById('pairing-code-input');
+          inp.select();
+          try { document.execCommand('copy'); } catch (e) {}
+        }
+        if (window.OurWorldAndroid && window.OurWorldAndroid.shareCode) { window.OurWorldAndroid.shareCode(code); } else { showToast(`Copied pairing code ${code}!`); }
+      });
+      document.getElementById('btn-enter-home').addEventListener('click', () => {
+        state.onboarded = true;
+        saveState();
+        document.getElementById('onboarding-modal').classList.add('hidden');
+        renderAll();
+        spawnHearts(0.5, 0.65, 10);
+        showToast(`Welcome home, ${state.partners[0].name} & ${state.partners[1].name}! 🏡`);
+      });
+
+      setupHomeCanvasInput();
+    }
+
+    // ==================== BOOT ====================
+    window.addEventListener('load', () => {
+      if (window.lucide) window.lucide.createIcons();
+      wireEvents();
+      renderAll();
+      if (state.onboarded) {
+        document.getElementById('onboarding-modal').classList.add('hidden');
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<resources>
+    <!-- Primary palette -->
+    <color name="ourworld_cream">#FFF8F2</color>
+    <color name="ourworld_rose">#E57A90</color>
+    <color name="ourworld_peach">#FFE7DC</color>
+    <color name="ourworld_lavender">#D4C5F9</color>
+    <color name="ourworld_mint">#C8F0E2</color>
+    <color name="ourworld_sky">#BDE0FE</color>
+    <color name="ourworld_gold">#FFD6A5</color>
+
+    <!-- Extended palette -->
+    <color name="ourworld_dark_rose">#C4546D</color>
+    <color name="ourworld_light_rose">#F5B8C4</color>
+    <color name="ourworld_warm_brown">#8B6F5C</color>
+    <color name="ourworld_dark_brown">#5C3A1E</color>
+    <color name="ourworld_soft_white">#FFFBF7</color>
+    <color name="ourworld_light_gray">#F0EBE6</color>
+
+    <!-- Semantic colors -->
+    <color name="ourworld_success">#7BC89F</color>
+    <color name="ourworld_warning">#FFB84D</color>
+    <color name="ourworld_error">#E57373</color>
+    <color name="ourworld_info">#81B9F5</color>
+</resources>
