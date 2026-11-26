@@ -40,6 +40,8 @@ import com.ourworld.app.ui.components.EmptyStateMessage
 import com.ourworld.app.ui.components.FloatingHearts
 import com.ourworld.app.ui.theme.*
 import com.ourworld.app.ui.viewmodel.GardenUiState
+import com.ourworld.app.util.TimeOfDay
+import com.ourworld.app.util.rememberPhoneTimeOfDay
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
@@ -55,12 +57,22 @@ fun GardenScreen(
     onHarvestPlant: (Plant) -> Unit,
     onTogglePlanting: () -> Unit
 ) {
-    val seasonColors = when (uiState.currentSeason) {
-        Season.SPRING -> listOf(Color(0xFFD8F3DC), Color(0xFFE9F5DB))
-        Season.SUMMER -> listOf(Color(0xFFBDE0FE), Color(0xFFFFF8D6))
-        Season.AUTUMN -> listOf(Color(0xFFFFE5D9), Color(0xFFFFD6A5))
-        Season.WINTER -> listOf(Color(0xFFD7E9F7), Color(0xFFF0F7FF))
+    val timeOfDay = rememberPhoneTimeOfDay()
+    val isNight = timeOfDay.isNight
+
+    val seasonColors = when (timeOfDay) {
+        TimeOfDay.NIGHT -> listOf(Color(0xFF0F172A), Color(0xFF24355E))
+        TimeOfDay.EVENING -> listOf(Color(0xFFFF8C7A), Color(0xFFFFD194))
+        TimeOfDay.DAWN -> listOf(Color(0xFFFFB5A7), Color(0xFFFFE5D9))
+        TimeOfDay.DAY -> when (uiState.currentSeason) {
+            Season.SPRING -> listOf(Color(0xFFD8F3DC), Color(0xFFE9F5DB))
+            Season.SUMMER -> listOf(Color(0xFFBDE0FE), Color(0xFFFFF8D6))
+            Season.AUTUMN -> listOf(Color(0xFFFFE5D9), Color(0xFFFFD6A5))
+            Season.WINTER -> listOf(Color(0xFFD7E9F7), Color(0xFFF0F7FF))
+        }
     }
+    val headerTextColor = if (isNight) OurWorldSoftWhite else OurWorldDarkBrown
+    val subHeaderColor = if (isNight) OurWorldLightRose else OurWorldWarmBrown
 
     // Live ticker so growth stages & countdown update automatically over the 24h cycle
     var nowMs by remember { mutableStateOf(System.currentTimeMillis()) }
@@ -110,12 +122,12 @@ fun GardenScreen(
                         "Our Garden 🌱",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = OurWorldDarkBrown
+                        color = headerTextColor
                     )
                     Text(
-                        "${uiState.currentSeason.emoji} ${uiState.currentSeason.label} • ${uiState.plants.size} plants",
+                        "${timeOfDay.emoji} ${timeOfDay.label} • ${uiState.currentSeason.emoji} ${uiState.currentSeason.label} • ${uiState.plants.size} plants",
                         fontSize = 12.sp,
-                        color = OurWorldWarmBrown
+                        color = subHeaderColor
                     )
                 }
                 FloatingActionButton(
@@ -137,8 +149,8 @@ fun GardenScreen(
                 val gardenW = constraints.maxWidth.toFloat().coerceAtLeast(1f)
                 val gardenH = constraints.maxHeight.toFloat().coerceAtLeast(1f)
 
-                GardenBackdrop(season = uiState.currentSeason)
-                SeasonalParticles(season = uiState.currentSeason)
+                GardenBackdrop(season = uiState.currentSeason, timeOfDay = timeOfDay)
+                SeasonalParticles(season = if (isNight) Season.SUMMER else uiState.currentSeason)
 
                 if (uiState.plants.isEmpty()) {
                     EmptyStateMessage(
@@ -340,41 +352,75 @@ fun GardenScreen(
 }
 
 @Composable
-private fun GardenBackdrop(season: Season) {
-    val hillColor1 = when (season) {
+private fun GardenBackdrop(season: Season, timeOfDay: TimeOfDay) {
+    val isNight = timeOfDay.isNight
+    val hillColor1 = if (isNight) Color(0xFF2D5A47) else when (season) {
         Season.SPRING -> Color(0xFFB7E4C7)
         Season.SUMMER -> Color(0xFF95D5B2)
         Season.AUTUMN -> Color(0xFFE9C46A).copy(alpha = 0.7f)
         Season.WINTER -> Color(0xFFE0EEF8)
     }
-    val hillColor2 = when (season) {
+    val hillColor2 = if (isNight) Color(0xFF1F4234) else when (season) {
         Season.SPRING -> Color(0xFF95D5B2)
         Season.SUMMER -> Color(0xFF74C69D)
         Season.AUTUMN -> Color(0xFFDDA15E).copy(alpha = 0.75f)
         Season.WINTER -> Color(0xFFCDE2F2)
     }
 
+    val twinkle by rememberInfiniteTransition(label = "garden_stars").animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "star_twinkle"
+    )
+
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
 
-        // Sun
-        drawCircle(
-            color = Color(0xFFFFE082).copy(alpha = 0.45f),
-            radius = w * 0.14f,
-            center = Offset(w * 0.82f, h * 0.14f)
-        )
-        drawCircle(
-            color = Color(0xFFFFD54F),
-            radius = w * 0.085f,
-            center = Offset(w * 0.82f, h * 0.14f)
-        )
+        if (isNight) {
+            // Twinkling stars
+            val starOffsets = listOf(
+                0.15f to 0.12f, 0.28f to 0.22f, 0.45f to 0.10f,
+                0.60f to 0.19f, 0.72f to 0.08f, 0.90f to 0.25f, 0.10f to 0.30f
+            )
+            starOffsets.forEachIndexed { idx, (sx, sy) ->
+                val a = if (idx % 2 == 0) twinkle else (1.4f - twinkle).coerceIn(0.3f, 1f)
+                drawCircle(Color.White.copy(alpha = a), radius = 3.5f, center = Offset(w * sx, h * sy))
+            }
+            // Glowing Moon
+            drawCircle(
+                color = Color(0xFFFFF6C3).copy(alpha = 0.28f),
+                radius = w * 0.13f,
+                center = Offset(w * 0.82f, h * 0.14f)
+            )
+            drawCircle(
+                color = Color(0xFFFFF6C3),
+                radius = w * 0.08f,
+                center = Offset(w * 0.82f, h * 0.14f)
+            )
+        } else {
+            // Sun
+            drawCircle(
+                color = Color(0xFFFFE082).copy(alpha = 0.45f),
+                radius = w * 0.14f,
+                center = Offset(w * 0.82f, h * 0.14f)
+            )
+            drawCircle(
+                color = Color(0xFFFFD54F),
+                radius = w * 0.085f,
+                center = Offset(w * 0.82f, h * 0.14f)
+            )
 
-        // Soft clouds
-        val cloudColor = Color.White.copy(alpha = 0.75f)
-        drawCircle(cloudColor, w * 0.07f, Offset(w * 0.22f, h * 0.15f))
-        drawCircle(cloudColor, w * 0.09f, Offset(w * 0.30f, h * 0.14f))
-        drawCircle(cloudColor, w * 0.06f, Offset(w * 0.38f, h * 0.16f))
+            // Soft clouds
+            val cloudColor = Color.White.copy(alpha = 0.75f)
+            drawCircle(cloudColor, w * 0.07f, Offset(w * 0.22f, h * 0.15f))
+            drawCircle(cloudColor, w * 0.09f, Offset(w * 0.30f, h * 0.14f))
+            drawCircle(cloudColor, w * 0.06f, Offset(w * 0.38f, h * 0.16f))
+        }
 
         // Rolling back hill
         val backHill = Path().apply {

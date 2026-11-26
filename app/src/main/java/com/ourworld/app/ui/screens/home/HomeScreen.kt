@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +47,8 @@ import com.ourworld.app.ui.components.*
 import com.ourworld.app.ui.theme.*
 import com.ourworld.app.ui.viewmodel.HomeUiState
 import com.ourworld.app.util.AmbientSoundManager
+import com.ourworld.app.util.TimeOfDay
+import com.ourworld.app.util.rememberPhoneTimeOfDay
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -70,9 +73,18 @@ fun HomeScreen(
 ) {
     val wallpaper = Wallpaper.entries.getOrElse(uiState.home?.wallpaper ?: 0) { Wallpaper.CREAM }
     val lighting = Lighting.entries.getOrElse(uiState.home?.lighting ?: 0) { Lighting.WARM }
-    val isDarkWall = wallpaper == Wallpaper.STARRY || lighting == Lighting.MOONLIGHT
+    val timeOfDay = rememberPhoneTimeOfDay()
+    val isNight = timeOfDay.isNight
+    val isDarkWall = wallpaper == Wallpaper.STARRY || lighting == Lighting.MOONLIGHT || isNight
     val headerTextColor = if (isDarkWall) OurWorldSoftWhite else OurWorldDarkBrown
     val subHeaderColor = if (isDarkWall) OurWorldLightRose else OurWorldWarmBrown
+
+    val wallBgColor = when (timeOfDay) {
+        TimeOfDay.NIGHT -> lerp(Color(wallpaper.color), Color(0xFF1A2547), 0.65f)
+        TimeOfDay.EVENING -> lerp(Color(wallpaper.color), Color(0xFFFFD1B3), 0.25f)
+        TimeOfDay.DAWN -> lerp(Color(wallpaper.color), Color(0xFFFFE5D9), 0.20f)
+        TimeOfDay.DAY -> Color(wallpaper.color)
+    }
 
     var showSettingsDialog by remember { mutableStateOf(false) }
     var showUnpairConfirm by remember { mutableStateOf(false) }
@@ -103,7 +115,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(wallpaper.color))
+                .background(wallBgColor)
         ) {
             // Top bar
             Row(
@@ -122,7 +134,7 @@ fun HomeScreen(
                         color = headerTextColor
                     )
                     Text(
-                        "${lighting.emoji} ${lighting.label}",
+                        "${timeOfDay.emoji} ${timeOfDay.label} • ${lighting.emoji} ${lighting.label}",
                         fontSize = 12.sp,
                         color = subHeaderColor
                     )
@@ -195,10 +207,10 @@ fun HomeScreen(
                 val roomHeightPx = constraints.maxHeight.toFloat().coerceAtLeast(1f)
 
                 // Cozy 2D Room Backdrop (Window, Fairy Lights, Baseboard, Rug)
-                CozyRoomBackdrop(lighting = lighting)
+                CozyRoomBackdrop(lighting = lighting, timeOfDay = timeOfDay)
 
                 // Furniture items sorted by Y for natural depth, positioned proportionally to room size
-                val isWarmLighting = lighting != Lighting.BRIGHT
+                val isWarmLighting = lighting != Lighting.BRIGHT || isNight
                 uiState.furniture
                     .sortedBy { it.positionY }
                     .forEach { item ->
@@ -479,7 +491,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CozyRoomBackdrop(lighting: Lighting) {
+private fun CozyRoomBackdrop(lighting: Lighting, timeOfDay: TimeOfDay) {
     val twinkle by rememberInfiniteTransition(label = "twinkle").animateFloat(
         initialValue = 0.55f,
         targetValue = 1f,
@@ -490,20 +502,24 @@ private fun CozyRoomBackdrop(lighting: Lighting) {
         label = "twinkle_alpha"
     )
 
-    val windowSkyColors = when (lighting) {
-        Lighting.MOONLIGHT -> listOf(Color(0xFF1A2547), Color(0xFF3B4D80))
-        Lighting.SUNSET -> listOf(Color(0xFFFF8C7A), Color(0xFFFFD194))
-        Lighting.ROMANTIC -> listOf(Color(0xFF6B4E8A), Color(0xFFD499B9))
+    val windowSkyColors = when {
+        timeOfDay == TimeOfDay.NIGHT || lighting == Lighting.MOONLIGHT -> listOf(Color(0xFF0F172A), Color(0xFF2C3E6B))
+        timeOfDay == TimeOfDay.EVENING || lighting == Lighting.SUNSET -> listOf(Color(0xFFFF8C7A), Color(0xFFFFD194))
+        timeOfDay == TimeOfDay.DAWN -> listOf(Color(0xFFFFB5A7), Color(0xFFFFE5D9))
+        lighting == Lighting.ROMANTIC -> listOf(Color(0xFF6B4E8A), Color(0xFFD499B9))
         else -> listOf(Color(0xFFA8D8FF), Color(0xFFE3F4FF))
     }
 
-    val ambientTint = when (lighting) {
-        Lighting.WARM -> OurWorldGold.copy(alpha = 0.14f)
-        Lighting.ROMANTIC -> OurWorldLavender.copy(alpha = 0.22f)
-        Lighting.SUNSET -> Color(0xFFFF9E7D).copy(alpha = 0.18f)
-        Lighting.MOONLIGHT -> Color(0xFF1D2B53).copy(alpha = 0.30f)
-        Lighting.FAIRY -> OurWorldGold.copy(alpha = 0.10f)
-        Lighting.BRIGHT -> Color.Transparent
+    val ambientTint = when {
+        timeOfDay == TimeOfDay.NIGHT -> Color(0xFF0F172A).copy(alpha = 0.25f)
+        timeOfDay == TimeOfDay.EVENING -> Color(0xFFFF9E7D).copy(alpha = 0.16f)
+        timeOfDay == TimeOfDay.DAWN -> OurWorldPeach.copy(alpha = 0.14f)
+        lighting == Lighting.WARM -> OurWorldGold.copy(alpha = 0.14f)
+        lighting == Lighting.ROMANTIC -> OurWorldLavender.copy(alpha = 0.22f)
+        lighting == Lighting.SUNSET -> Color(0xFFFF9E7D).copy(alpha = 0.18f)
+        lighting == Lighting.MOONLIGHT -> Color(0xFF1D2B53).copy(alpha = 0.30f)
+        lighting == Lighting.FAIRY -> OurWorldGold.copy(alpha = 0.10f)
+        else -> Color.Transparent
     }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -524,9 +540,15 @@ private fun CozyRoomBackdrop(lighting: Lighting) {
             size = Size(winW, winH),
             cornerRadius = CornerRadius(winW * 0.5f, winW * 0.5f)
         )
+        // Stars inside window at night
+        if (timeOfDay == TimeOfDay.NIGHT || lighting == Lighting.MOONLIGHT) {
+            drawCircle(Color.White.copy(alpha = twinkle), 3.5f, Offset(winLeft + winW * 0.25f, winTop + winH * 0.28f))
+            drawCircle(Color.White.copy(alpha = 1.3f - twinkle), 2.5f, Offset(winLeft + winW * 0.42f, winTop + winH * 0.18f))
+            drawCircle(Color.White.copy(alpha = twinkle), 3f, Offset(winLeft + winW * 0.30f, winTop + winH * 0.48f))
+        }
         // Sun or Moon inside window
         drawCircle(
-            color = if (lighting == Lighting.MOONLIGHT || lighting == Lighting.ROMANTIC)
+            color = if (timeOfDay == TimeOfDay.NIGHT || lighting == Lighting.MOONLIGHT || lighting == Lighting.ROMANTIC)
                 Color(0xFFFFF6C3) else Color(0xFFFFE082),
             radius = winW * 0.11f,
             center = Offset(winLeft + winW * 0.7f, winTop + winH * 0.32f)
