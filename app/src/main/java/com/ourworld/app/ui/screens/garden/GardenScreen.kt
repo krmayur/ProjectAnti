@@ -239,7 +239,10 @@ fun GardenScreen(
                                             color = OurWorldDarkBrown
                                         )
                                         Text(
-                                            "${stage.label} • $remaining",
+                                            if (isNight && stage != GrowthStage.FULLY_GROWN)
+                                                "${stage.label} • 🌙 Resting at night ($remaining)"
+                                            else
+                                                "${stage.label} • $remaining",
                                             fontSize = 12.sp,
                                             color = OurWorldRose,
                                             fontWeight = FontWeight.Medium
@@ -311,7 +314,11 @@ fun GardenScreen(
                                         onClick = {
                                             onWaterPlant(plant.id)
                                             nowMs = System.currentTimeMillis()
-                                            actionToast = "💧 Watered ${plant.name}! (+1.5h growth)"
+                                            actionToast = if (isNight) {
+                                                "💧 Watered ${plant.name}! (🌙 Resting until 5 AM)"
+                                            } else {
+                                                "💧 Watered ${plant.name}! (+1.5h growth)"
+                                            }
                                         },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),

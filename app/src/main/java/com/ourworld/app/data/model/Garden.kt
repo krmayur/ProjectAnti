@@ -1,5 +1,9 @@
 package com.ourworld.app.data.model
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+
 data class Plant(
     val id: String = "",
     val type: PlantType = PlantType.ROSE,
@@ -17,8 +21,36 @@ data class Plant(
 ) {
     fun fullGrowthMillis(): Long = type.growHours * 60L * 60L * 1000L
 
+    /**
+     * Counts only daytime milliseconds (05:00 - 20:00 local time) between plantedAt and nowMs
+     * so plants rest and do not progress at night.
+     */
+    fun daylightElapsedMillis(nowMs: Long = System.currentTimeMillis()): Long {
+        if (nowMs <= plantedAt) return growthBoostMillis
+        val zone = ZoneId.systemDefault()
+        val startDate = Instant.ofEpochMilli(plantedAt).atZone(zone).toLocalDate()
+        val endDate = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
+
+        var daylight = 0L
+        var day: LocalDate = startDate
+        // Cap iteration just in case of very old timestamps
+        var safety = 0
+        while (!day.isAfter(endDate) && safety < 30) {
+            val dayStart = day.atTime(5, 0).atZone(zone).toInstant().toEpochMilli()
+            val dayEnd = day.atTime(20, 0).atZone(zone).toInstant().toEpochMilli()
+            val overlapStart = maxOf(plantedAt, dayStart)
+            val overlapEnd = minOf(nowMs, dayEnd)
+            if (overlapEnd > overlapStart) {
+                daylight += (overlapEnd - overlapStart)
+            }
+            day = day.plusDays(1)
+            safety++
+        }
+        return daylight + growthBoostMillis
+    }
+
     fun computedProgress(nowMs: Long = System.currentTimeMillis()): Float {
-        val elapsed = (nowMs - plantedAt).coerceAtLeast(0L) + growthBoostMillis
+        val elapsed = daylightElapsedMillis(nowMs)
         val total = fullGrowthMillis().coerceAtLeast(1L)
         return (elapsed.toFloat() / total.toFloat()).coerceIn(0f, 1f)
     }
@@ -35,7 +67,7 @@ data class Plant(
     }
 
     fun timeRemainingLabel(nowMs: Long = System.currentTimeMillis()): String {
-        val elapsed = (nowMs - plantedAt).coerceAtLeast(0L) + growthBoostMillis
+        val elapsed = daylightElapsedMillis(nowMs)
         val remaining = (fullGrowthMillis() - elapsed).coerceAtLeast(0L)
         if (remaining == 0L) return "Ready to harvest! 🌾"
         val hours = remaining / (1000L * 60L * 60L)

@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ourworld.app.data.model.GrowthStage
 import com.ourworld.app.data.model.Plant
 import com.ourworld.app.data.model.PlantType
+import com.ourworld.app.util.currentTimeOfDay
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -55,8 +56,9 @@ class GardenRepository @Inject constructor(
             .collection("plants").document(plantId)
         val doc = plantRef.get().await()
         val plant = doc.toObject(Plant::class.java) ?: return
-        // Each watering adds 90 minutes of growth boost toward the plant's bloom time
-        val newBoost = (plant.growthBoostMillis + 90L * 60L * 1000L)
+        // Growth boost only applies during daytime; at night plants rest
+        val boostAdd = if (currentTimeOfDay().isNight) 0L else 90L * 60L * 1000L
+        val newBoost = (plant.growthBoostMillis + boostAdd)
             .coerceAtMost(plant.fullGrowthMillis())
         val updatedPlant = plant.copy(
             waterLevel = minOf(100, plant.waterLevel + 30),
