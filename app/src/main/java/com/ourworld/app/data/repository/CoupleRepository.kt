@@ -174,11 +174,11 @@ class CoupleRepository @Inject constructor(
 
     private suspend fun addDefaultFurniture(coupleId: String) {
         val defaults = listOf(
-            FurnitureItem(id = "sofa_1", type = "sofa", name = "Cozy Sofa", emoji = "🛋️", positionX = 0.3f, positionY = 0.6f),
-            FurnitureItem(id = "table_1", type = "table", name = "Coffee Table", emoji = "🪑", positionX = 0.5f, positionY = 0.65f),
-            FurnitureItem(id = "lamp_1", type = "lamp", name = "Warm Lamp", emoji = "💡", positionX = 0.15f, positionY = 0.4f),
-            FurnitureItem(id = "plant_1", type = "plant", name = "Little Plant", emoji = "🌿", positionX = 0.85f, positionY = 0.45f),
-            FurnitureItem(id = "frame_1", type = "frame", name = "Photo Frame", emoji = "🖼️", positionX = 0.5f, positionY = 0.25f)
+            FurnitureItem(id = "frame_1", type = "frame", name = "Photo Frame", emoji = "🖼️", positionX = 0.16f, positionY = 0.22f),
+            FurnitureItem(id = "lamp_1", type = "lamp", name = "Warm Lamp", emoji = "💡", positionX = 0.10f, positionY = 0.56f),
+            FurnitureItem(id = "sofa_1", type = "sofa", name = "Cozy Sofa", emoji = "🛋️", positionX = 0.36f, positionY = 0.60f),
+            FurnitureItem(id = "table_1", type = "table", name = "Coffee Table", emoji = "🪑", positionX = 0.58f, positionY = 0.66f),
+            FurnitureItem(id = "plant_1", type = "plant", name = "Little Plant", emoji = "🌿", positionX = 0.84f, positionY = 0.58f)
         )
         val batch = firestore.batch()
         defaults.forEach { item ->

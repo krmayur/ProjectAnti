@@ -197,20 +197,24 @@ fun HomeScreen(
                 // Cozy 2D Room Backdrop (Window, Fairy Lights, Baseboard, Rug)
                 CozyRoomBackdrop(lighting = lighting)
 
-                // Furniture items positioned proportionally to room size
-                uiState.furniture.forEach { item ->
-                    FurnitureOnCanvas(
-                        item = item,
-                        roomWidthPx = roomWidthPx,
-                        roomHeightPx = roomHeightPx,
-                        isEditing = uiState.isCustomizing,
-                        onTap = {
-                            tappedFurnitureTip = "${item.emoji} ${item.name}"
-                        },
-                        onMove = { x, y -> onMoveFurniture(item.id, x, y) },
-                        onRemove = { onRemoveFurniture(item.id) }
-                    )
-                }
+                // Furniture items sorted by Y for natural depth, positioned proportionally to room size
+                val isWarmLighting = lighting != Lighting.BRIGHT
+                uiState.furniture
+                    .sortedBy { it.positionY }
+                    .forEach { item ->
+                        FurnitureOnCanvas(
+                            item = item,
+                            roomWidthPx = roomWidthPx,
+                            roomHeightPx = roomHeightPx,
+                            isWarmLighting = isWarmLighting,
+                            isEditing = uiState.isCustomizing,
+                            onTap = {
+                                tappedFurnitureTip = "${item.emoji} ${item.name}"
+                            },
+                            onMove = { x, y -> onMoveFurniture(item.id, x, y) },
+                            onRemove = { onRemoveFurniture(item.id) }
+                        )
+                    }
 
                 // Walkable Avatars (offset slightly if both are at default 0.5f, 0.7f)
                 val myRawX = if (uiState.myAvatar.positionX == 0.5f && uiState.myAvatar.positionY == 0.7f) 0.34f else uiState.myAvatar.positionX
@@ -624,19 +628,30 @@ private fun FurnitureOnCanvas(
     item: FurnitureItem,
     roomWidthPx: Float,
     roomHeightPx: Float,
+    isWarmLighting: Boolean,
     isEditing: Boolean,
     onTap: () -> Unit,
     onMove: (Float, Float) -> Unit,
     onRemove: () -> Unit
 ) {
-    val maxX = (roomWidthPx - 140f).coerceAtLeast(100f)
-    val maxY = (roomHeightPx - 180f).coerceAtLeast(100f)
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val (widthDp, heightDp) = furnitureDimensions(item.type)
+    val itemWidthPx = with(density) { widthDp.toPx() }
+    val itemHeightPx = with(density) { heightDp.toPx() }
+
+    val maxX = (roomWidthPx - itemWidthPx).coerceAtLeast(40f)
+    val maxY = (roomHeightPx - itemHeightPx - 40f).coerceAtLeast(40f)
+
+    // Keep wall items on the wall and floor items grounded on/near the floor
+    val isWallItem = item.type == "frame" || item.type == "clock"
+    val minYRatio = if (isWallItem) 0.12f else 0.48f
+    val maxYRatio = if (isWallItem) 0.48f else 0.88f
 
     var offset by remember(item.id, item.positionX, item.positionY, maxX, maxY) {
         mutableStateOf(
             Offset(
-                (item.positionX.coerceIn(0.05f, 0.9f) * maxX),
-                (item.positionY.coerceIn(0.05f, 0.85f) * maxY)
+                (item.positionX.coerceIn(0.04f, 0.94f) * maxX),
+                (item.positionY.coerceIn(minYRatio, maxYRatio) * maxY)
             )
         )
     }
@@ -650,8 +665,8 @@ private fun FurnitureOnCanvas(
                         detectDragGestures(
                             onDragEnd = {
                                 onMove(
-                                    (offset.x / maxX).coerceIn(0.05f, 0.95f),
-                                    (offset.y / maxY).coerceIn(0.05f, 0.9f)
+                                    (offset.x / maxX).coerceIn(0.02f, 0.96f),
+                                    (offset.y / maxY).coerceIn(0.08f, 0.92f)
                                 )
                             }
                         ) { change, dragAmount ->
@@ -668,7 +683,7 @@ private fun FurnitureOnCanvas(
             )
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(item.emoji, fontSize = 38.sp)
+            FurnitureIllustration(item = item, isWarmLighting = isWarmLighting)
             if (isEditing) {
                 Text(
                     "✕",

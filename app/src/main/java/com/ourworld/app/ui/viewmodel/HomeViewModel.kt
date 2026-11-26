@@ -94,14 +94,15 @@ class HomeViewModel @Inject constructor(
 
     fun addFurniture(coupleId: String, type: String, name: String, emoji: String, userId: String) {
         viewModelScope.launch {
+            val isWallItem = type == "frame" || type == "clock"
             val item = FurnitureItem(
                 id = UUID.randomUUID().toString(),
                 type = type,
                 name = name,
                 emoji = emoji,
                 placedBy = userId,
-                positionX = (0.2f..0.8f).random(),
-                positionY = (0.4f..0.8f).random()
+                positionX = (0.15f..0.80f).random(),
+                positionY = if (isWallItem) (0.18f..0.38f).random() else (0.56f..0.76f).random()
             )
             coupleRepository.addFurniture(coupleId, item)
         }
