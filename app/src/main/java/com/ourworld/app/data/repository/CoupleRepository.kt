@@ -69,12 +69,14 @@ class CoupleRepository @Inject constructor(
                 "paired" to false,
                 "partnerId" to ""
             )
-            val batch = firestore.batch()
-            batch.update(firestore.collection("users").document(currentUid), resetData)
+            // Always reset current user's document first
+            firestore.collection("users").document(currentUid).update(resetData).await()
+            // Best-effort reset partner's document (don't fail if partner already unpaired)
             if (partnerId.isNotEmpty()) {
-                batch.update(firestore.collection("users").document(partnerId), resetData)
+                try {
+                    firestore.collection("users").document(partnerId).update(resetData).await()
+                } catch (_: Exception) {}
             }
-            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
