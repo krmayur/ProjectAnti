@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 data class GiftsUiState(
@@ -30,15 +32,28 @@ class GiftsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GiftsUiState())
     val uiState: StateFlow<GiftsUiState> = _uiState.asStateFlow()
 
+    private fun startOfTodayMillis(): Long {
+        return LocalDate.now()
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
+
     fun loadGifts(coupleId: String) {
         viewModelScope.launch {
             giftRepository.observeGifts(coupleId).collect { gifts ->
-                _uiState.value = _uiState.value.copy(gifts = gifts)
+                val todayStart = startOfTodayMillis()
+                _uiState.value = _uiState.value.copy(
+                    gifts = gifts.filter { it.sentAt >= todayStart }
+                )
             }
         }
         viewModelScope.launch {
             giftRepository.observeNotes(coupleId).collect { notes ->
-                _uiState.value = _uiState.value.copy(notes = notes)
+                val todayStart = startOfTodayMillis()
+                _uiState.value = _uiState.value.copy(
+                    notes = notes.filter { it.sentAt >= todayStart }
+                )
             }
         }
     }

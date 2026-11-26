@@ -61,12 +61,19 @@ fun GiftsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    "Gifts & Notes 🎁",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OurWorldDarkBrown
-                )
+                Column {
+                    Text(
+                        "Gifts & Notes 🎁",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OurWorldDarkBrown
+                    )
+                    Text(
+                        "Today: ${uiState.gifts.size} gifts • ${uiState.notes.size} notes (resets daily 🌅)",
+                        fontSize = 12.sp,
+                        color = OurWorldWarmBrown
+                    )
+                }
                 Row {
                     IconButton(onClick = onToggleWritingNote) {
                         Icon(Icons.Outlined.Edit, "Write Note", tint = OurWorldRose)
@@ -169,8 +176,8 @@ fun GiftsScreen(
             item {
                 EmptyStateMessage(
                     emoji = "🎁",
-                    title = "No gifts yet!",
-                    subtitle = "Send your first gift or note to your partner 💕"
+                    title = "No gifts today yet!",
+                    subtitle = "Send your first gift or note to your partner today 💕"
                 )
             }
         }
