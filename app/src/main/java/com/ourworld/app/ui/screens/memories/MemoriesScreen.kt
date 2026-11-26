@@ -9,12 +9,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ourworld.app.data.model.Achievement
@@ -24,20 +26,28 @@ import com.ourworld.app.ui.components.*
 import com.ourworld.app.ui.theme.*
 import com.ourworld.app.ui.viewmodel.MemoriesUiState
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MemoriesScreen(
     uiState: MemoriesUiState,
     coupleId: String,
     userId: String,
     onAddMemory: (String, String, MemoryType) -> Unit,
+    onSetAnniversaryDate: (Long) -> Unit,
     onToggleAdding: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(MemoryType.MOMENT) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -65,6 +75,14 @@ fun MemoriesScreen(
                     Icon(Icons.Default.Add, "Add Memory", tint = OurWorldRose)
                 }
             }
+        }
+
+        // Anniversary & Together Counter Card
+        item {
+            AnniversaryCounterCard(
+                anniversaryMillis = uiState.anniversaryDate,
+                onPickDate = { showDatePicker = true }
+            )
         }
 
         // Add memory panel
@@ -175,6 +193,155 @@ fun MemoriesScreen(
         }
 
         item { Spacer(modifier = Modifier.height(100.dp)) }
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = uiState.anniversaryDate ?: System.currentTimeMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { selected ->
+                            onSetAnniversaryDate(selected)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Save 💕", color = OurWorldRose, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel", color = OurWorldWarmBrown)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
+private fun AnniversaryCounterCard(
+    anniversaryMillis: Long?,
+    onPickDate: () -> Unit
+) {
+    val startDate = anniversaryMillis?.let {
+        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+    }
+    val today = LocalDate.now()
+    val effectiveStart = if (startDate != null && !startDate.isAfter(today)) startDate else today
+    val period = Period.between(effectiveStart, today)
+    val totalDays = ChronoUnit.DAYS.between(effectiveStart, today).coerceAtLeast(0L)
+
+    CozyCard(modifier = Modifier.fillMaxWidth()) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "Together For 💕",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = OurWorldDarkBrown
+                    )
+                    Text(
+                        if (anniversaryMillis != null) "Since ${formatDate(anniversaryMillis)}"
+                        else "Tap calendar to set your anniversary",
+                        fontSize = 12.sp,
+                        color = OurWorldWarmBrown
+                    )
+                }
+                OutlinedButton(
+                    onClick = onPickDate,
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = OurWorldRose)
+                ) {
+                    Icon(
+                        Icons.Outlined.CalendarMonth,
+                        contentDescription = "Set Anniversary",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(if (anniversaryMillis != null) "Edit" else "Set Date", fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                TimeUnitBox(
+                    value = period.years,
+                    label = if (period.years == 1) "Year" else "Years",
+                    bgColor = OurWorldPeach.copy(alpha = 0.7f),
+                    modifier = Modifier.weight(1f)
+                )
+                TimeUnitBox(
+                    value = period.months,
+                    label = if (period.months == 1) "Month" else "Months",
+                    bgColor = OurWorldLavender.copy(alpha = 0.55f),
+                    modifier = Modifier.weight(1f)
+                )
+                TimeUnitBox(
+                    value = period.days,
+                    label = if (period.days == 1) "Day" else "Days",
+                    bgColor = OurWorldMint.copy(alpha = 0.65f),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                "$totalDays days together",
+                fontSize = 12.sp,
+                color = OurWorldRose,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun TimeUnitBox(
+    value: Int,
+    label: String,
+    bgColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = bgColor
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "$value",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = OurWorldDarkBrown
+            )
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                color = OurWorldWarmBrown,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 

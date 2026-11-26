@@ -220,6 +220,7 @@ fun OurWorldNavGraph(
                 coupleId = coupleId,
                 userId = userId,
                 onAddMemory = { title, desc, type -> memoriesViewModel.addMemory(coupleId, title, desc, type, userId) },
+                onSetAnniversaryDate = { timestamp -> memoriesViewModel.setAnniversaryDate(coupleId, timestamp) },
                 onToggleAdding = { memoriesViewModel.toggleAddingMemory() }
             )
         }

@@ -18,6 +18,7 @@ data class MemoriesUiState(
     val memories: List<Memory> = emptyList(),
     val achievements: List<Achievement> = emptyList(),
     val milestones: List<Milestone> = emptyList(),
+    val anniversaryDate: Long? = null,
     val isAddingMemory: Boolean = false,
     val isLoading: Boolean = false
 )
@@ -45,6 +46,18 @@ class MemoriesViewModel @Inject constructor(
             memoryRepository.observeMilestones(coupleId).collect { milestones ->
                 _uiState.value = _uiState.value.copy(milestones = milestones)
             }
+        }
+        viewModelScope.launch {
+            memoryRepository.observeAnniversaryDate(coupleId).collect { date ->
+                _uiState.value = _uiState.value.copy(anniversaryDate = date)
+            }
+        }
+    }
+
+    fun setAnniversaryDate(coupleId: String, timestamp: Long) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(anniversaryDate = timestamp)
+            memoryRepository.updateAnniversaryDate(coupleId, timestamp)
         }
     }
 

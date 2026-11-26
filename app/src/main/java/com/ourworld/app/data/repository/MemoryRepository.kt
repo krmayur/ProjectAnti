@@ -74,6 +74,24 @@ class MemoryRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
+    fun observeAnniversaryDate(coupleId: String): Flow<Long?> = callbackFlow {
+        val listener = firestore.collection("couples").document(coupleId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(null)
+                    return@addSnapshotListener
+                }
+                val anniv = snapshot?.getLong("anniversaryDate") ?: snapshot?.getLong("createdAt")
+                trySend(anniv)
+            }
+        awaitClose { listener.remove() }
+    }
+
+    suspend fun updateAnniversaryDate(coupleId: String, timestamp: Long) {
+        firestore.collection("couples").document(coupleId)
+            .update("anniversaryDate", timestamp).await()
+    }
+
     suspend fun initializeDefaultAchievements(coupleId: String) {
         val defaults = listOf(
             Achievement(id = "first_login", title = "Welcome Home", description = "Log in for the first time", emoji = "🏠", requirement = 1),
