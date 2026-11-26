@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.OurWorld" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.OurWorld" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/ourworld_cream</item>
         <item name="android:statusBarColor">@color/ourworld_cream</item>
         <item name="android:navigationBarColor">@color/ourworld_cream</item>
