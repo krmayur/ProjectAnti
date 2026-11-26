@@ -60,6 +60,12 @@ class GardenViewModel @Inject constructor(
         }
     }
 
+    fun movePlant(coupleId: String, plantId: String, x: Float, y: Float) {
+        viewModelScope.launch {
+            gardenRepository.updatePlantPosition(coupleId, plantId, x, y)
+        }
+    }
+
     fun togglePlanting() {
         _uiState.value = _uiState.value.copy(isPlanting = !_uiState.value.isPlanting)
     }

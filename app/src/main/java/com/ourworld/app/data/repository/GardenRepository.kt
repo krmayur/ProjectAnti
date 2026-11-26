@@ -54,22 +54,23 @@ class GardenRepository @Inject constructor(
             .collection("plants").document(plantId)
         val doc = plantRef.get().await()
         val plant = doc.toObject(Plant::class.java) ?: return
+        // Each watering adds 90 minutes of growth boost toward the 24h bloom cycle
+        val newBoost = (plant.growthBoostMillis + 90L * 60L * 1000L)
+            .coerceAtMost(Plant.FULL_GROWTH_MILLIS)
         val updatedPlant = plant.copy(
-            waterLevel = minOf(100, plant.waterLevel + 25),
+            waterLevel = minOf(100, plant.waterLevel + 30),
             lastWatered = System.currentTimeMillis(),
-            health = minOf(100, plant.health + 5)
+            health = minOf(100, plant.health + 10),
+            growthBoostMillis = newBoost
         )
-        // Check if plant should grow
-        val daysSincePlanted = (System.currentTimeMillis() - plant.plantedAt) / (1000 * 60 * 60 * 24)
-        val growDays = plant.type.growDays
-        val newStage = when {
-            daysSincePlanted >= growDays -> GrowthStage.FULLY_GROWN
-            daysSincePlanted >= growDays * 0.75 -> GrowthStage.BLOOMING
-            daysSincePlanted >= growDays * 0.5 -> GrowthStage.GROWING
-            daysSincePlanted >= growDays * 0.25 -> GrowthStage.SPROUT
-            else -> GrowthStage.SEED
-        }
+        val newStage = updatedPlant.computedStage()
         plantRef.set(updatedPlant.copy(stage = newStage)).await()
+    }
+
+    suspend fun updatePlantPosition(coupleId: String, plantId: String, x: Float, y: Float) {
+        firestore.collection("couples").document(coupleId)
+            .collection("plants").document(plantId)
+            .update(mapOf("positionX" to x, "positionY" to y)).await()
     }
 
     suspend fun removePlant(coupleId: String, plantId: String) {
