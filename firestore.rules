@@ -14,8 +14,8 @@ service cloud.firestore {
         request.auth.uid == userId ||
         // Partner can pair an unpaired user with themselves
         (
-          resource.data.get('isPaired', false) == false &&
-          resource.data.get('paired', false) == false &&
+          resource.data.get('isPaired', false) != true &&
+          resource.data.get('paired', false) != true &&
           request.resource.data.partnerId == request.auth.uid &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coupleId', 'isPaired', 'paired', 'partnerId'])
         )
