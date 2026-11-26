@@ -44,12 +44,12 @@ class CoupleRepository @Inject constructor(
                 )
             ).await()
 
-            // Update both users
+            // Update both users (write both "paired" and "isPaired" for Firestore Kotlin serialization)
             val batch = firestore.batch()
             batch.update(firestore.collection("users").document(currentUid),
-                mapOf("coupleId" to coupleId, "isPaired" to true, "partnerId" to partnerId))
+                mapOf("coupleId" to coupleId, "isPaired" to true, "paired" to true, "partnerId" to partnerId))
             batch.update(firestore.collection("users").document(partnerId),
-                mapOf("coupleId" to coupleId, "isPaired" to true, "partnerId" to currentUid))
+                mapOf("coupleId" to coupleId, "isPaired" to true, "paired" to true, "partnerId" to currentUid))
             batch.commit().await()
 
             // Add default furniture
