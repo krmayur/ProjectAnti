@@ -156,9 +156,24 @@ fun OurWorldNavGraph(
         composable(Screen.Activities.route) {
             val activitiesViewModel: ActivitiesViewModel = hiltViewModel()
             val activitiesState by activitiesViewModel.uiState.collectAsState()
+            val coupleId = authState.currentUser?.coupleId ?: ""
+            val userId = authState.currentUser?.uid ?: ""
+
+            LaunchedEffect(coupleId) {
+                if (coupleId.isNotEmpty()) {
+                    activitiesViewModel.loadChallenges(coupleId)
+                }
+            }
 
             ActivitiesScreen(
-                uiState = activitiesState
+                uiState = activitiesState,
+                userCoins = authState.currentUser?.coins ?: 0,
+                userLevel = authState.currentUser?.level ?: 1,
+                userXp = authState.currentUser?.xp ?: 0,
+                onClaimReward = { challenge ->
+                    activitiesViewModel.claimReward(coupleId, userId, challenge)
+                },
+                onClearRewardMessage = { activitiesViewModel.clearRewardMessage() }
             )
         }
 
