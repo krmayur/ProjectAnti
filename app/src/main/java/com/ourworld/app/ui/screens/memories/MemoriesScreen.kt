@@ -156,18 +156,6 @@ fun MemoriesScreen(
             )
         }
 
-        // Achievements
-        if (uiState.achievements.isNotEmpty()) {
-            item { SectionHeader(title = "Achievements", emoji = "🏆") }
-            item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(uiState.achievements) { achievement ->
-                        AchievementBadge(achievement)
-                    }
-                }
-            }
-        }
-
         // Memories timeline
         if (uiState.memories.isNotEmpty()) {
             item { SectionHeader(title = "Timeline", emoji = "📖") }
