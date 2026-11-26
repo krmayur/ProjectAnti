@@ -1,5 +1,7 @@
 package com.ourworld.app.data.model
 
+import com.google.firebase.firestore.PropertyName
+
 data class Gift(
     val id: String = "",
     val fromUserId: String = "",
@@ -7,7 +9,9 @@ data class Gift(
     val type: GiftType = GiftType.FLOWER,
     val message: String = "",
     val hiddenMessage: String = "",
+    @get:PropertyName("isOpened")
     val isOpened: Boolean = false,
+    @get:PropertyName("isHidden")
     val isHidden: Boolean = false,
     val sentAt: Long = System.currentTimeMillis(),
     val openedAt: Long = 0,

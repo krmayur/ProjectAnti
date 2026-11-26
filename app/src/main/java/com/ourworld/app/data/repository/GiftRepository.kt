@@ -25,7 +25,14 @@ class GiftRepository @Inject constructor(
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
-                val gifts = snapshot?.toObjects(Gift::class.java) ?: emptyList()
+                val gifts = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Gift::class.java)?.let { g ->
+                        val openedFlag = (doc.getBoolean("isOpened") == true) ||
+                            (doc.getBoolean("opened") == true) ||
+                            g.isOpened
+                        g.copy(isOpened = openedFlag)
+                    }
+                } ?: emptyList()
                 trySend(gifts)
             }
         awaitClose { listener.remove() }
@@ -45,7 +52,13 @@ class GiftRepository @Inject constructor(
     suspend fun openGift(coupleId: String, giftId: String) {
         firestore.collection("couples").document(coupleId)
             .collection("gifts").document(giftId)
-            .update(mapOf("isOpened" to true, "openedAt" to System.currentTimeMillis())).await()
+            .update(
+                mapOf(
+                    "isOpened" to true,
+                    "opened" to true,
+                    "openedAt" to System.currentTimeMillis()
+                )
+            ).await()
     }
 
     fun observeNotes(coupleId: String): Flow<List<HandwrittenNote>> = callbackFlow {

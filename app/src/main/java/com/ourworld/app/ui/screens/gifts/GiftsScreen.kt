@@ -43,6 +43,7 @@ fun GiftsScreen(
     var selectedGiftType by remember { mutableStateOf<GiftType?>(null) }
     var giftMessage by remember { mutableStateOf("") }
     var noteContent by remember { mutableStateOf("") }
+    var revealedGift by remember { mutableStateOf<Gift?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -147,8 +148,11 @@ fun GiftsScreen(
             items(uiState.gifts) { gift ->
                 GiftCard(
                     gift = gift,
-                    isMyGift = gift.toUserId == userId,
-                    onOpen = { onOpenGift(gift.id) }
+                    isMyGift = gift.toUserId == userId || gift.fromUserId != userId,
+                    onOpen = {
+                        onOpenGift(gift.id)
+                        revealedGift = gift.copy(isOpened = true)
+                    }
                 )
             }
         }
@@ -172,6 +176,42 @@ fun GiftsScreen(
         }
 
         item { Spacer(modifier = Modifier.height(100.dp)) }
+    }
+
+    // Gift Reveal Dialog
+    revealedGift?.let { gift ->
+        AlertDialog(
+            onDismissRequest = { revealedGift = null },
+            containerColor = OurWorldSoftWhite,
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(gift.emoji, fontSize = 56.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        gift.type.label,
+                        fontWeight = FontWeight.Bold,
+                        color = OurWorldDarkBrown
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = if (gift.message.isNotBlank()) "\"${gift.message}\"" else "A special surprise from your partner 💕",
+                    color = OurWorldWarmBrown,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { revealedGift = null }) {
+                    Text("Love it 💕", color = OurWorldRose, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        )
     }
 }
 
@@ -199,17 +239,17 @@ private fun GiftCard(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                if (gift.isOpened) gift.emoji else "🎁",
+                if (gift.isOpened || !isMyGift) gift.emoji else "🎁",
                 fontSize = 36.sp
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    if (gift.isOpened) gift.type.label else "Mystery Gift",
+                    if (gift.isOpened || !isMyGift) gift.type.label else "Mystery Gift",
                     fontWeight = FontWeight.SemiBold,
                     color = OurWorldDarkBrown
                 )
-                if (gift.message.isNotEmpty() && gift.isOpened) {
+                if (gift.message.isNotEmpty() && (gift.isOpened || !isMyGift)) {
                     Text(
                         "\"${gift.message}\"",
                         fontSize = 13.sp,
@@ -218,13 +258,13 @@ private fun GiftCard(
                     )
                 }
                 Text(
-                    if (isMyGift) "From your partner 💕" else "Sent by you",
+                    if (isMyGift) "From your partner 💕" else if (gift.isOpened) "Opened by your partner ✓" else "Sent by you • Waiting to open",
                     fontSize = 11.sp,
                     color = OurWorldLightRose
                 )
             }
             if (!gift.isOpened && isMyGift) {
-                Text("Tap to open!", fontSize = 11.sp, color = OurWorldRose)
+                Text("Tap to open!", fontSize = 11.sp, color = OurWorldRose, fontWeight = FontWeight.SemiBold)
             }
         }
     }

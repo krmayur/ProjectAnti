@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -61,6 +62,7 @@ fun HomeScreen(
     onMoveFurniture: (String, Float, Float) -> Unit,
     onRemoveFurniture: (String) -> Unit,
     onPlayAnimation: (String) -> Unit,
+    onMoveAvatar: (Float, Float) -> Unit,
     onToggleCustomize: () -> Unit,
     onNavigateToAvatar: () -> Unit,
     onUnpair: () -> Unit,
@@ -170,11 +172,24 @@ fun HomeScreen(
                 }
             }
 
-            // Room area with 2D illustration, furniture, and avatars
+            // Room area with 2D illustration, furniture, and walkable avatars
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+                    .then(
+                        if (!uiState.isCustomizing) {
+                            Modifier.pointerInput(Unit) {
+                                detectTapGestures { tapOffset ->
+                                    val w = size.width.toFloat().coerceAtLeast(1f)
+                                    val h = size.height.toFloat().coerceAtLeast(1f)
+                                    val targetX = (tapOffset.x / w).coerceIn(0.12f, 0.88f)
+                                    val targetY = (tapOffset.y / h).coerceIn(0.42f, 0.88f)
+                                    onMoveAvatar(targetX, targetY)
+                                }
+                            }
+                        } else Modifier
+                    )
             ) {
                 val roomWidthPx = constraints.maxWidth.toFloat().coerceAtLeast(1f)
                 val roomHeightPx = constraints.maxHeight.toFloat().coerceAtLeast(1f)
@@ -197,23 +212,111 @@ fun HomeScreen(
                     )
                 }
 
-                // Avatars standing on the cozy rug
+                // Walkable Avatars (offset slightly if both are at default 0.5f, 0.7f)
+                val myRawX = if (uiState.myAvatar.positionX == 0.5f && uiState.myAvatar.positionY == 0.7f) 0.34f else uiState.myAvatar.positionX
+                val myRawY = if (uiState.myAvatar.positionX == 0.5f && uiState.myAvatar.positionY == 0.7f) 0.76f else uiState.myAvatar.positionY
+
+                val myAnimX by animateFloatAsState(
+                    targetValue = myRawX.coerceIn(0.12f, 0.88f),
+                    animationSpec = tween(650, easing = FastOutSlowInEasing),
+                    label = "my_x"
+                )
+                val myAnimY by animateFloatAsState(
+                    targetValue = myRawY.coerceIn(0.42f, 0.88f),
+                    animationSpec = tween(650, easing = FastOutSlowInEasing),
+                    label = "my_y"
+                )
+
+                val partnerAvatar = uiState.partnerAvatar
+                val partnerRawX = if (partnerAvatar != null && partnerAvatar.positionX == 0.5f && partnerAvatar.positionY == 0.7f) 0.66f else (partnerAvatar?.positionX ?: 0.66f)
+                val partnerRawY = if (partnerAvatar != null && partnerAvatar.positionX == 0.5f && partnerAvatar.positionY == 0.7f) 0.76f else (partnerAvatar?.positionY ?: 0.76f)
+
+                val partnerAnimX by animateFloatAsState(
+                    targetValue = partnerRawX.coerceIn(0.12f, 0.88f),
+                    animationSpec = tween(650, easing = FastOutSlowInEasing),
+                    label = "partner_x"
+                )
+                val partnerAnimY by animateFloatAsState(
+                    targetValue = partnerRawY.coerceIn(0.42f, 0.88f),
+                    animationSpec = tween(650, easing = FastOutSlowInEasing),
+                    label = "partner_y"
+                )
+
+                val avatarPx = 280f
+                val myOffsetX = (myAnimX * roomWidthPx - avatarPx / 2f).roundToInt().coerceIn(0, (roomWidthPx - avatarPx).toInt().coerceAtLeast(0))
+                val myOffsetY = (myAnimY * roomHeightPx - avatarPx * 0.7f).roundToInt().coerceIn(0, (roomHeightPx - avatarPx).toInt().coerceAtLeast(0))
+
+                // Partner avatar
+                if (partnerAvatar != null) {
+                    val pOffsetX = (partnerAnimX * roomWidthPx - avatarPx / 2f).roundToInt().coerceIn(0, (roomWidthPx - avatarPx).toInt().coerceAtLeast(0))
+                    val pOffsetY = (partnerAnimY * roomHeightPx - avatarPx * 0.7f).roundToInt().coerceIn(0, (roomHeightPx - avatarPx).toInt().coerceAtLeast(0))
+
+                    Box(modifier = Modifier.offset { IntOffset(pOffsetX, pOffsetY) }) {
+                        AvatarDisplay(
+                            avatar = partnerAvatar,
+                            name = uiState.partnerName,
+                            size = 100,
+                            isAnimating = partnerAvatar.currentAnimation != "idle",
+                            onClick = {
+                                showHeartBurst = true
+                                onPlayAnimation(AvatarAnimation.HEART.name)
+                            }
+                        )
+                    }
+
+                    // Floating heart between avatars when close together
+                    val dist = kotlin.math.hypot((myAnimX - partnerAnimX).toDouble(), (myAnimY - partnerAnimY).toDouble())
+                    if (dist < 0.36) {
+                        val midX = ((myOffsetX + pOffsetX) / 2f + avatarPx * 0.35f).roundToInt()
+                        val midY = ((myOffsetY + pOffsetY) / 2f + avatarPx * 0.25f).roundToInt()
+                        Text(
+                            "💕",
+                            fontSize = 24.sp,
+                            modifier = Modifier
+                                .offset { IntOffset(midX, midY) }
+                                .clickable {
+                                    showHeartBurst = true
+                                    onPlayAnimation(AvatarAnimation.HEART.name)
+                                }
+                        )
+                    }
+                }
+
+                // My walkable avatar (tap to customize, or tap anywhere in room to walk)
                 Box(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 22.dp)
+                        .offset { IntOffset(myOffsetX, myOffsetY) }
+                        .then(
+                            if (!uiState.isCustomizing) {
+                                Modifier.pointerInput(roomWidthPx, roomHeightPx) {
+                                    detectDragGestures { change, dragAmount ->
+                                        change.consume()
+                                        val newX = (myRawX + dragAmount.x / roomWidthPx).coerceIn(0.12f, 0.88f)
+                                        val newY = (myRawY + dragAmount.y / roomHeightPx).coerceIn(0.42f, 0.88f)
+                                        onMoveAvatar(newX, newY)
+                                    }
+                                }
+                            } else Modifier
+                        )
                 ) {
-                    AvatarPairDisplay(
-                        myAvatar = uiState.myAvatar,
-                        partnerAvatar = uiState.partnerAvatar,
-                        myName = uiState.myName,
-                        partnerName = uiState.partnerName,
-                        avatarSize = 104,
-                        onHeartClick = {
-                            showHeartBurst = true
-                            onPlayAnimation(AvatarAnimation.HEART.name)
-                        },
-                        onMyAvatarClick = onNavigateToAvatar
+                    AvatarDisplay(
+                        avatar = uiState.myAvatar,
+                        name = uiState.myName,
+                        size = 100,
+                        isAnimating = uiState.myAvatar.currentAnimation != "idle",
+                        onClick = onNavigateToAvatar
+                    )
+                }
+
+                // Subtle walk hint at bottom-left
+                if (!uiState.isCustomizing) {
+                    Text(
+                        "Tap floor to walk ✨",
+                        fontSize = 11.sp,
+                        color = subHeaderColor.copy(alpha = 0.75f),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 12.dp, bottom = 6.dp)
                     )
                 }
 

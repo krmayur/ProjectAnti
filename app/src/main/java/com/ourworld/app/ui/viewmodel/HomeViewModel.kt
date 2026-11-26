@@ -131,6 +131,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun moveAvatar(userId: String, x: Float, y: Float) {
+        _uiState.value = _uiState.value.copy(
+            myAvatar = _uiState.value.myAvatar.copy(positionX = x, positionY = y)
+        )
+        viewModelScope.launch {
+            coupleRepository.updateAvatarPosition(userId, x, y)
+        }
+    }
+
     fun toggleCustomizing() {
         _uiState.value = _uiState.value.copy(isCustomizing = !_uiState.value.isCustomizing)
     }

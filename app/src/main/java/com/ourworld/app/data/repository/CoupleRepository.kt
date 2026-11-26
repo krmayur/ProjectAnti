@@ -166,6 +166,12 @@ class CoupleRepository @Inject constructor(
             .update("currentAnimation", animation).await()
     }
 
+    suspend fun updateAvatarPosition(userId: String, x: Float, y: Float) {
+        firestore.collection("users").document(userId)
+            .collection("avatar").document("current")
+            .update(mapOf("positionX" to x, "positionY" to y)).await()
+    }
+
     private suspend fun addDefaultFurniture(coupleId: String) {
         val defaults = listOf(
             FurnitureItem(id = "sofa_1", type = "sofa", name = "Cozy Sofa", emoji = "🛋️", positionX = 0.3f, positionY = 0.6f),
