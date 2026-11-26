@@ -158,8 +158,7 @@ fun OurWorldNavGraph(
             val activitiesState by activitiesViewModel.uiState.collectAsState()
 
             ActivitiesScreen(
-                uiState = activitiesState,
-                onCompleteActivity = { activitiesViewModel.completeActivity(it) }
+                uiState = activitiesState
             )
         }
 

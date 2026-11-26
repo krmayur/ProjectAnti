@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ourworld.app.data.model.CoupleChallenge
-import com.ourworld.app.data.model.DailyActivity
 import com.ourworld.app.ui.components.CozyCard
 import com.ourworld.app.ui.components.SectionHeader
 import com.ourworld.app.ui.theme.*
@@ -22,8 +21,7 @@ import com.ourworld.app.ui.viewmodel.ActivitiesUiState
 
 @Composable
 fun ActivitiesScreen(
-    uiState: ActivitiesUiState,
-    onCompleteActivity: (String) -> Unit
+    uiState: ActivitiesUiState
 ) {
     LazyColumn(
         modifier = Modifier
@@ -39,23 +37,11 @@ fun ActivitiesScreen(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = OurWorldDarkBrown,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
             )
         }
 
         item {
-            SectionHeader(title = "Daily Activities", emoji = "📋")
-        }
-
-        items(uiState.dailyActivities) { activity ->
-            DailyActivityCard(
-                activity = activity,
-                onComplete = { onCompleteActivity(activity.id) }
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
             SectionHeader(title = "Couple Challenges", emoji = "🏆")
         }
 
@@ -65,53 +51,6 @@ fun ActivitiesScreen(
 
         item {
             Spacer(modifier = Modifier.height(100.dp))
-        }
-    }
-}
-
-@Composable
-private fun DailyActivityCard(
-    activity: DailyActivity,
-    onComplete: () -> Unit
-) {
-    CozyCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(activity.emoji, fontSize = 32.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    activity.title,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OurWorldDarkBrown
-                )
-                Text(
-                    activity.description,
-                    fontSize = 13.sp,
-                    color = OurWorldWarmBrown
-                )
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("⭐ ${activity.xpReward} XP", fontSize = 11.sp, color = OurWorldGold)
-                    Text("🪙 ${activity.coinReward}", fontSize = 11.sp, color = OurWorldGold)
-                }
-            }
-            if (!activity.isCompleted) {
-                Button(
-                    onClick = onComplete,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = OurWorldMint),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text("Do ✓", color = OurWorldDarkBrown, fontSize = 13.sp)
-                }
-            } else {
-                Text("✅", fontSize = 24.sp)
-            }
         }
     }
 }
@@ -137,7 +76,6 @@ private fun ChallengeCard(challenge: CoupleChallenge) {
                     color = OurWorldWarmBrown
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                // Progress bar
                 LinearProgressIndicator(
                     progress = { challenge.progress },
                     modifier = Modifier
