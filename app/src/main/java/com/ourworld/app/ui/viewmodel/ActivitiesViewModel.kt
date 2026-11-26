@@ -11,10 +11,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 data class ActivitiesUiState(
-    val challenges: List<CoupleChallenge> = emptyList(),
+    val todayLabel: String = "",
+    val dailyChallenges: List<CoupleChallenge> = emptyList(),
+    val milestoneChallenges: List<CoupleChallenge> = emptyList(),
     val rewardMessage: String? = null,
     val isLoading: Boolean = false
 )
@@ -30,15 +35,24 @@ class ActivitiesViewModel @Inject constructor(
     private var plantCount = 0
     private var furnitureCount = 0
     private var giftCount = 0
+    private var noteCount = 0
     private var memoryCount = 0
     private var claimedIds = emptySet<String>()
+    private var currentUserId = ""
+
+    private val todayKey: String
+        get() = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+
+    private val todayDisplay: String
+        get() = SimpleDateFormat("MMM d", Locale.US).format(Date())
 
     init {
         rebuildChallenges()
     }
 
-    fun loadChallenges(coupleId: String) {
+    fun loadChallenges(coupleId: String, userId: String) {
         if (coupleId.isEmpty()) return
+        currentUserId = userId
         val coupleRef = firestore.collection("couples").document(coupleId)
 
         coupleRef.collection("plants").addSnapshotListener { snap, _ ->
@@ -53,6 +67,10 @@ class ActivitiesViewModel @Inject constructor(
             giftCount = snap?.size() ?: 0
             rebuildChallenges()
         }
+        coupleRef.collection("notes").addSnapshotListener { snap, _ ->
+            noteCount = snap?.size() ?: 0
+            rebuildChallenges()
+        }
         coupleRef.collection("memories").addSnapshotListener { snap, _ ->
             memoryCount = snap?.size() ?: 0
             rebuildChallenges()
@@ -64,18 +82,75 @@ class ActivitiesViewModel @Inject constructor(
     }
 
     private fun rebuildChallenges() {
-        val list = listOf(
+        val dateKey = todayKey
+        val dayIndex = (System.currentTimeMillis() / (1000L * 60L * 60L * 24L)).toInt()
+
+        // Pool of rotating daily couple challenges — 3 fresh ones picked each day
+        val dailyPool = listOf(
             CoupleChallenge(
-                id = "c0",
-                title = "Welcome Home",
-                description = "Move into your shared home together",
-                difficulty = 1,
-                xpReward = 30,
-                coinReward = 25,
+                id = "daily_${dateKey}_checkin_$currentUserId",
+                title = "Cozy Check-In",
+                description = "Visit your shared home together today",
+                xpReward = 25,
+                coinReward = 20,
                 progress = 1f,
-                isCompleted = "c0" in claimedIds,
                 emoji = "🏠"
             ),
+            CoupleChallenge(
+                id = "daily_${dateKey}_garden_$currentUserId",
+                title = "Bloom Together",
+                description = "Have at least 1 plant growing in your garden ($plantCount/1)",
+                xpReward = 35,
+                coinReward = 25,
+                progress = (plantCount / 1f).coerceIn(0f, 1f),
+                emoji = "🌷"
+            ),
+            CoupleChallenge(
+                id = "daily_${dateKey}_sweet_$currentUserId",
+                title = "Sweet Thought",
+                description = "Send a gift or love note (${giftCount + noteCount}/1)",
+                xpReward = 40,
+                coinReward = 30,
+                progress = ((giftCount + noteCount) / 1f).coerceIn(0f, 1f),
+                emoji = "💌"
+            ),
+            CoupleChallenge(
+                id = "daily_${dateKey}_decor_$currentUserId",
+                title = "Interior Touch",
+                description = "Style your home with 5+ items ($furnitureCount/5)",
+                xpReward = 30,
+                coinReward = 25,
+                progress = (furnitureCount / 5f).coerceIn(0f, 1f),
+                emoji = "🛋️"
+            ),
+            CoupleChallenge(
+                id = "daily_${dateKey}_memory_$currentUserId",
+                title = "Capture the Moment",
+                description = "Save a shared memory ($memoryCount/1)",
+                xpReward = 45,
+                coinReward = 35,
+                progress = (memoryCount / 1f).coerceIn(0f, 1f),
+                emoji = "📸"
+            ),
+            CoupleChallenge(
+                id = "daily_${dateKey}_love_$currentUserId",
+                title = "Daily Love Spark",
+                description = "Share a warm moment in OurWorld today",
+                xpReward = 25,
+                coinReward = 20,
+                progress = 1f,
+                emoji = "✨"
+            )
+        )
+
+        // Deterministically pick 3 challenges for today so they rotate every 24h
+        val start = dayIndex % dailyPool.size
+        val todaysPicks = (0 until 3).map { offset ->
+            val item = dailyPool[(start + offset) % dailyPool.size]
+            item.copy(isCompleted = item.id in claimedIds)
+        }
+
+        val milestones = listOf(
             CoupleChallenge(
                 id = "c1",
                 title = "Green Thumbs",
@@ -121,7 +196,12 @@ class ActivitiesViewModel @Inject constructor(
                 emoji = "💕"
             )
         )
-        _uiState.value = _uiState.value.copy(challenges = list)
+
+        _uiState.value = _uiState.value.copy(
+            todayLabel = todayDisplay,
+            dailyChallenges = todaysPicks,
+            milestoneChallenges = milestones
+        )
     }
 
     fun claimReward(coupleId: String, userId: String, challenge: CoupleChallenge) {

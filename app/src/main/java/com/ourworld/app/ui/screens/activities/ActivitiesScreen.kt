@@ -87,10 +87,26 @@ fun ActivitiesScreen(
         }
 
         item {
-            SectionHeader(title = "Couple Challenges", emoji = "🏆")
+            SectionHeader(
+                title = "Today's Challenges (${uiState.todayLabel})",
+                emoji = "🌅"
+            )
         }
 
-        items(uiState.challenges) { challenge ->
+        items(uiState.dailyChallenges) { challenge ->
+            ChallengeCard(
+                challenge = challenge,
+                isLoading = uiState.isLoading,
+                onClaim = { onClaimReward(challenge) }
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(6.dp))
+            SectionHeader(title = "Couple Milestones", emoji = "🏆")
+        }
+
+        items(uiState.milestoneChallenges) { challenge ->
             ChallengeCard(
                 challenge = challenge,
                 isLoading = uiState.isLoading,

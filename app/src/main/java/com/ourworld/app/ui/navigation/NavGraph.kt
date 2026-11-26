@@ -159,9 +159,9 @@ fun OurWorldNavGraph(
             val coupleId = authState.currentUser?.coupleId ?: ""
             val userId = authState.currentUser?.uid ?: ""
 
-            LaunchedEffect(coupleId) {
+            LaunchedEffect(coupleId, userId) {
                 if (coupleId.isNotEmpty()) {
-                    activitiesViewModel.loadChallenges(coupleId)
+                    activitiesViewModel.loadChallenges(coupleId, userId)
                 }
             }
 
